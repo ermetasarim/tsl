@@ -350,11 +350,23 @@
     margin: 0; padding: 0 18px 16px; color: var(--faint); font-size: 12px; line-height: 1.5;
   }
   @media (max-width: 980px) {
-    .desk, .statgrid, .boards.multi, .boards.dense { grid-template-columns: 1fr; }
-    .club strong { font-size: 20px; }
-    .club img { width: 44px; height: 44px; }
-    .digits b { font-size: 48px; }
+    .shell { padding: 14px 12px 40px; }
+    .nav { align-items: flex-start; }
+    .controls { width: 100%; }
+    .desk, .boards.multi, .boards.dense { grid-template-columns: 1fr; }
+    .statgrid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .board, .boards.multi .board { min-height: 0; }
+    .board-inner { padding: 14px 12px 16px; }
+    .scoreline { grid-template-columns: minmax(0, 1fr) 84px minmax(0, 1fr); gap: 6px; }
+    .club, .club.away { flex-direction: column; text-align: center; gap: 6px; }
+    .club span { display: none; }
+    .club img, .boards.multi .club img { width: 42px; height: 42px; }
+    .club strong, .club strong.big, .boards.multi .club strong { font-size: 15px; white-space: normal; line-height: 1.15; }
+    .digits { min-width: 0; }
+    .digits b, .boards.multi .digits b { font-size: 34px; }
     .brand h1 { font-size: 28px; }
+    .fixture { grid-template-columns: minmax(0, 1fr) 72px minmax(0, 1fr); padding: 10px 12px; }
+    .side b { font-size: 13px; }
   }
 </style>
 </head>

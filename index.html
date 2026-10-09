@@ -198,7 +198,7 @@
     display: block; font-size: 24px; font-weight: 680; letter-spacing: -.03em;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .boards.multi .club strong { font-size: 24px; }
+  .club strong.big { font-size: 34px; }
   .boards.dense .club strong { font-size: 13px; }
   .boards.dense .club span { display: none; }
   .club span { color: var(--muted); font-size: 11px; letter-spacing: .04em; }
@@ -261,7 +261,7 @@
   .leader img { width: 22px; height: 22px; object-fit: contain; flex: none; background: transparent; }
   .leader .rk { width: 16px; color: var(--faint); font-size: 12px; text-align: center; flex: none; }
 
-  .desk { display: grid; grid-template-columns: 460px minmax(0, 1fr); gap: 16px; align-items: start; }
+  .desk { display: grid; grid-template-columns: 420px minmax(0, 1fr); gap: 16px; align-items: start; }
   .panel {
     background: rgba(16,20,27,.86);
     border: 1px solid var(--line);
@@ -427,7 +427,7 @@ const NAMES = {
   "Goztepe": "Göztepe", "Eyupspor": "Eyüpspor"
 };
 
-const state = { mode: "live", official: [], matches: [], timer: null, leaders: null, openBoards: new Set() };
+const state = { mode: "live", official: [], matches: [], timer: null, leaders: null, openBoards: new Set(), gpSnap: new Map() };
 const SOUNDS = {
   goal: "sounds/gol.mp3",
   start: "sounds/basladi.mp3",
@@ -610,11 +610,23 @@ function shouldProject(match, byId) {
   if (match.state === "in") return true;
   const home = byId.get(match.home.id);
   const away = byId.get(match.away.id);
-  if (!home || !away) return true;
+  if (!home || !away) return false;
+  const snap = state.gpSnap.get(String(match.id));
+  if (snap) return home.gp <= snap.home && away.gp <= snap.away;
   const hg = recordGames(match.home.record);
   const ag = recordGames(match.away.record);
-  if (hg != null && ag != null) return hg <= home.gp && ag <= away.gp;
-  return true;
+  if (hg == null || ag == null) return false;
+  return home.gp < hg || away.gp < ag;
+}
+function rememberLive(matches, standings) {
+  const byId = new Map(standings.map(t => [String(t.id), t]));
+  for (const m of matches) {
+    if (m.state !== "in" || state.gpSnap.has(String(m.id))) continue;
+    const home = byId.get(m.home.id);
+    const away = byId.get(m.away.id);
+    if (!home || !away) continue;
+    state.gpSnap.set(String(m.id), { home: home.gp, away: away.gp });
+  }
 }
 function project(official, matches) {
   const byId = new Map(official.map(t => [String(t.id), { ...t, id: String(t.id), playing: false, delta: 0, projected: false }]));
@@ -713,9 +725,9 @@ function boardCard(m) {
   return `<article class="board ${live ? "toggle" : ""} ${open ? "open" : ""}" data-id="${esc(m.id)}"><div class="board-inner">
     <div class="board-kicker"><span>Trendyol Süper Lig</span>${tag}</div>
     <div class="scoreline">
-      <div class="club"><img alt="" src="${esc(m.home.logo)}" /><div><span>Ev sahibi</span><strong>${esc(m.home.name)}</strong></div></div>
+      <div class="club"><img alt="" src="${esc(m.home.logo)}" /><div><span>Ev sahibi</span><strong class="${/fener/i.test(m.home.name) ? "big" : ""}">${esc(m.home.name)}</strong></div></div>
       <div class="digits"><b>${esc(scoreText(m))}</b><em>${esc(statusLabel(m))}</em></div>
-      <div class="club away"><img alt="" src="${esc(m.away.logo)}" /><div><span>Deplasman</span><strong>${esc(m.away.name)}</strong></div></div>
+      <div class="club away"><img alt="" src="${esc(m.away.logo)}" /><div><span>Deplasman</span><strong class="${/fener/i.test(m.away.name) ? "big" : ""}">${esc(m.away.name)}</strong></div></div>
     </div>
     ${live ? timelineHtml(m) : ""}
   </div></article>`;
@@ -770,6 +782,60 @@ function parsePlayerLeaders(data, key) {
     logo: L.athlete.team?.logos?.[0]?.href || "",
     badge: L.athlete.team?.logos?.[0]?.href || ""
   }));
+}
+function matchBox(data) {
+  return (data.boxscore?.teams || []).map(t => {
+    const stat = {};
+    for (const s of t.statistics || []) stat[s.name] = Number(s.displayValue ?? s.value ?? 0);
+    const sot = stat.shotsOnTarget || 0;
+    const shots = stat.totalShots || 0;
+    return {
+      id: String(t.team.id),
+      name: trName(t.team.displayName),
+      logo: t.team.logo || t.team.logos?.[0]?.href || "",
+      poss: stat.possessionPct || 0,
+      xg: Math.round((sot * 0.32 + Math.max(0, shots - sot) * 0.05) * 10) / 10
+    };
+  });
+}
+function applyLiveLeaders(packed, matches) {
+  const goals = new Map(packed.goals.map(r => [r.name, { ...r }]));
+  const assists = new Map(packed.assists.map(r => [r.name, { ...r }]));
+  const xg = new Map(packed.xg.map(r => [r.name, { ...r, value: Number(r.value) }]));
+  const poss = new Map(packed.poss.map(r => [r.name, { ...r, value: Number(r.value) }]));
+  for (const m of matches) {
+    if (m.state !== "in") continue;
+    for (const ev of m.events || []) {
+      if (ev.kind !== "goal") continue;
+      const team = ev.side === "home" ? m.home : m.away;
+      const row = goals.get(ev.name) || { name: ev.name, team: team.name, value: 0, logo: team.logo, badge: team.logo };
+      row.value += 1;
+      row.team = team.name;
+      row.badge = team.logo;
+      goals.set(ev.name, row);
+      if (ev.assist) {
+        const a = assists.get(ev.assist) || { name: ev.assist, team: team.name, value: 0, logo: team.logo, badge: team.logo };
+        a.value += 1;
+        a.badge = team.logo;
+        assists.set(ev.assist, a);
+      }
+    }
+    for (const t of m.box || []) {
+      const shot = xg.get(t.name) || { name: t.name, team: "", value: 0, logo: t.logo, badge: t.logo };
+      shot.value = Math.round((Number(shot.value) + t.xg) * 10) / 10;
+      shot.badge = t.logo || shot.badge;
+      xg.set(t.name, shot);
+      if (m.state === "in" && t.poss) {
+        poss.set(t.name, { name: t.name, team: "canlı", value: t.poss, logo: t.logo, badge: t.logo });
+      }
+    }
+  }
+  const top = (map) => [...map.values()].sort((a, b) => b.value - a.value).slice(0, 5);
+  packed.goals = top(goals);
+  packed.assists = top(assists);
+  packed.xg = top(xg);
+  packed.poss = top(poss);
+  return packed;
 }
 function possessionOf(data) {
   for (const c of data?.splits?.categories || []) {
@@ -847,10 +913,13 @@ async function load() {
       try {
         const res = await fetch(SUMMARY(m.id), { cache: "no-store" });
         if (!res.ok) return;
-        m.events = parseIncidents(await res.json(), m);
+        const data = await res.json();
+        m.events = parseIncidents(data, m);
+        m.box = matchBox(data);
       } catch (_) {}
     }));
     cueSounds(state.matches, matches);
+    rememberLive(matches, standings);
     state.official = standings;
     state.matches = matches;
     const packed = packFallback();
@@ -870,17 +939,17 @@ async function load() {
       } catch { return null; }
     }))).filter(Boolean).sort((a, b) => b.value - a.value).slice(0, 5);
     if (possRows.length) packed.poss = possRows;
+    applyLiveLeaders(packed, matches);
     state.leaders = packed;
+    delete document.getElementById("updated").dataset.hold;
     paint();
     const live = matches.some(m => m.state === "in");
-    document.getElementById("updated").textContent = new Intl.DateTimeFormat("tr-TR", {
-      timeZone: "Europe/Istanbul", hour: "2-digit", minute: "2-digit", second: "2-digit"
-    }).format(new Date());
     clearTimeout(state.timer);
     state.timer = setTimeout(load, live ? 20000 : 60000);
   } catch (err) {
     if (!state.official.length) seedFallback();
     paint();
+    document.getElementById("updated").dataset.hold = "1";
     document.getElementById("updated").textContent = "Kaynak yok";
     state.timer = setTimeout(load, 30000);
   } finally {
@@ -905,6 +974,15 @@ function paint() {
   document.getElementById("modeLive").classList.toggle("on", state.mode === "live");
   document.getElementById("modeOfficial").classList.toggle("on", state.mode === "official");
 }
+function tickClock() {
+  const el = document.getElementById("updated");
+  if (!el || el.dataset.hold) return;
+  el.textContent = new Intl.DateTimeFormat("tr-TR", {
+    timeZone: "Europe/Istanbul", hour: "2-digit", minute: "2-digit", second: "2-digit"
+  }).format(new Date());
+}
+setInterval(tickClock, 1000);
+tickClock();
 document.getElementById("modeLive").onclick = () => { state.mode = "live"; paint(); };
 document.getElementById("modeOfficial").onclick = () => { state.mode = "official"; paint(); };
 document.getElementById("featured").addEventListener("click", (e) => {

@@ -389,7 +389,6 @@
         <button id="themeLight" type="button">Açık</button>
       </div>
       <span class="pill" id="updated">—</span>
-      <button class="refresh" id="refreshBtn" type="button">Yenile</button>
     </div>
   </header>
 
@@ -915,8 +914,6 @@ async function getJSON(url) {
   }
 }
 async function load() {
-  const btn = document.getElementById("refreshBtn");
-  btn.disabled = true;
   try {
     const now = new Date();
     const dates = [];
@@ -967,8 +964,6 @@ async function load() {
     paint();
     clearTimeout(state.timer);
     state.timer = setTimeout(load, 15000);
-  } finally {
-    btn.disabled = false;
   }
 }
 function paint() {
@@ -1008,7 +1003,6 @@ document.getElementById("featured").addEventListener("click", (e) => {
   else state.openBoards.add(id);
   paint();
 });
-document.getElementById("refreshBtn").onclick = () => { armSounds(); load(); };
 document.addEventListener("pointerdown", armSounds, { once: true });
 function applyTheme(theme) {
   document.body.classList.toggle("light", theme === "light");

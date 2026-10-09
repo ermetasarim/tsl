@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TSL - Canlı Skor ve Puan Durumu</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23e10600'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-family='Arial,sans-serif' font-size='22' font-weight='700' fill='%23fff'%3ETSL%3C/text%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Outfit:wght@380;460;560;680&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #090b0e;
+    --bg-2: #10141b;
+    --panel: #141922;
+    --panel-2: #1b2230;
+    --line: rgba(255,255,255,.08);
+    --line-strong: rgba(255,255,255,.14);
+    --text: #f4f1ea;
+    --muted: #9aa3b2;
+    --faint: #6d7686;
+    --orange: #ff7a1a;
+    --red: #e10600;
+    --gold: #f0c14b;
+    --green: #3ecf8e;
+    --blue: #6cb6ff;
+    --purple: #c4a6ff;
+    --live: #ff3355;
+    --shadow: 0 20px 50px rgba(0,0,0,.35);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh;
+    color: var(--text);
+    font-family: Outfit, "Segoe UI", sans-serif;
+    background:
+      radial-gradient(900px 420px at 0% -10%, rgba(225,6,0,.28), transparent 55%),
+      radial-gradient(700px 380px at 100% 0%, rgba(255,122,26,.16), transparent 50%),
+      linear-gradient(180deg, #12080c 0%, var(--bg) 280px);
+  }
+  body::before {
+    content: "";
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+    background-size: 72px 72px;
+    mask-image: linear-gradient(180deg, #000 0%, transparent 70%);
+  }
+  body.light {
+    --bg: #eef1f6;
+    --bg-2: #ffffff;
+    --panel: #ffffff;
+    --panel-2: #f6f8fb;
+    --line: rgba(20,28,42,.12);
+    --line-strong: rgba(20,28,42,.16);
+    --text: #151a22;
+    --muted: #4c5666;
+    --faint: #6b7484;
+    --gold: #b8860b;
+    --green: #1f8a56;
+    --blue: #1d6fbf;
+    --purple: #6d4db8;
+    --shadow: 0 10px 28px rgba(20,28,42,.08);
+    background: #eef1f6;
+  }
+  body.light::before { display: none; }
+  body.light .board {
+    background: #fff;
+    border-color: rgba(20,28,42,.12);
+    box-shadow: 0 8px 24px rgba(20,28,42,.06);
+  }
+  body.light .board::after { display: none; }
+  body.light .statcard, body.light .panel {
+    background: #fff;
+    border-color: rgba(20,28,42,.1);
+    box-shadow: 0 8px 22px rgba(20,28,42,.05);
+  }
+  body.light th { background: #f3f5f9; color: #5c6676; }
+  body.light td { color: #243041; }
+  body.light .seg, body.light .pill { background: #fff; color: #3d4654; }
+  body.light .club img, body.light .side img, body.light .teamline img.badge, body.light .leader img {
+    background: #f3f5f8; border-radius: 50%; padding: 2px;
+  }
+  body.light .digits b, body.light .club strong, body.light .side b { color: #151a22; }
+  body.light .digits em { color: #9a6b08; }
+  body.light .day { color: #8a6410; background: #fbf6ea; }
+  body.light .pos { background: #e8edf4; color: #243041; }
+  body.light tr.playing td { background: #fff1f3; }
+  body.light tr.zone-cl .pos { background: #e5f6ee; color: #1f8a56; }
+  body.light tr.zone-el .pos { background: #e7f2fc; color: #1d6fbf; }
+  body.light tr.zone-conf .pos { background: #f3eefe; color: #6d4db8; }
+  body.light tr.zone-rel .pos { background: #fdecef; color: #c4233a; }
+  body.light .leader .val { color: #9a6b08; }
+  body.light .tl-min::before { border-left-color: rgba(20,28,42,.28); }
+  .shell { position: relative; max-width: 1180px; margin: 0 auto; padding: 22px 20px 56px; }
+
+  .nav {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    margin-bottom: 22px;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .crest {
+    width: 64px; height: 64px; flex: none; object-fit: contain; background: transparent;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,.35));
+  }
+  .brand h1 {
+    margin: 0; font-family: "Barlow Condensed", sans-serif;
+    font-size: 28px; line-height: .92; letter-spacing: .01em; font-weight: 700;
+  }
+  .brand h1 b { color: #ff3b4e; font-weight: 700; }
+  .brand p { margin: 4px 0 0; color: var(--muted); font-size: 13px; letter-spacing: .04em; }
+
+  .controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .seg {
+    display: flex; padding: 3px; border-radius: 999px;
+    background: rgba(0,0,0,.35); border: 1px solid var(--line);
+  }
+  .seg button, .refresh {
+    border: 0; cursor: pointer; font-family: inherit; font-weight: 560;
+  }
+  .seg button {
+    background: transparent; color: var(--muted); border-radius: 999px;
+    padding: 8px 14px; font-size: 13px;
+  }
+  .seg button.on { background: #e10600; color: white; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 36px; padding: 0 12px; border-radius: 999px;
+    background: rgba(255,255,255,.04); border: 1px solid var(--line);
+    color: var(--muted); font-size: 12px; letter-spacing: .02em;
+  }
+  .pill.hot { background: #e10600; border-color: #e10600; color: white; font-weight: 680; letter-spacing: .08em; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #fff; }
+  .dot.live { background: #fff; animation: blink 1s steps(1) infinite; }
+  @keyframes blink {
+    0%, 45% { opacity: 1; box-shadow: 0 0 0 4px rgba(255,255,255,.35); }
+    50%, 100% { opacity: .15; box-shadow: none; }
+  }
+  .live-tag {
+    display: inline-flex; align-items: center; gap: 7px;
+    color: white; background: #e10600; border-radius: 999px;
+    padding: 6px 12px; letter-spacing: .12em; font-weight: 680; font-size: 12px;
+  }
+  .panel-h h2 { color: #ff3b4e; }
+  .refresh {
+    height: 36px; padding: 0 14px; border-radius: 999px;
+    background: linear-gradient(180deg, #ff8a32, #f26512);
+    color: white; font-size: 13px;
+    box-shadow: 0 8px 18px rgba(242,101,18,.28);
+  }
+  .refresh:hover { filter: brightness(1.06); }
+  .refresh:disabled { opacity: .6; cursor: wait; }
+
+  .boards {
+    display: grid; gap: 12px; margin-bottom: 16px;
+    grid-template-columns: 1fr;
+  }
+  .boards.multi, .boards.triple { grid-template-columns: 1fr; }
+  .boards.dense { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .board {
+    position: relative; overflow: hidden;
+    border-radius: 22px; border: 1px solid var(--line-strong);
+    background:
+      linear-gradient(115deg, rgba(225,6,0,.2), transparent 32%),
+      linear-gradient(180deg, #1a2030, #10151d);
+    box-shadow: var(--shadow);
+    min-height: 168px;
+  }
+  .boards.multi .board { min-height: 168px; }
+  .boards.dense .board { min-height: 0; border-radius: 16px; }
+  .board::after {
+    content: "";
+    position: absolute; right: -40px; top: -50px; width: 240px; height: 240px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,122,26,.22), transparent 68%);
+  }
+  .boards.dense .board::after { display: none; }
+  .board-inner { position: relative; z-index: 1; padding: 16px 18px 18px; }
+  .boards.dense .board-inner { padding: 12px 12px 10px; }
+  .board-kicker {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    color: var(--faint); font-size: 11px; letter-spacing: .04em;
+  }
+  .scoreline {
+    margin-top: 14px;
+    display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center;
+  }
+  .club { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .club.away { flex-direction: row-reverse; text-align: right; }
+  .club img { width: 52px; height: 52px; object-fit: contain; filter: drop-shadow(0 8px 12px rgba(0,0,0,.4)); }
+  .boards.multi .club img { width: 52px; height: 52px; }
+  .boards.dense .club { display: block; text-align: center; }
+  .boards.dense .club.away { text-align: center; }
+  .boards.dense .club img { width: 28px; height: 28px; margin: 0 auto 4px; }
+  .club strong {
+    display: block; font-size: 24px; font-weight: 680; letter-spacing: -.03em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .boards.multi .club strong { font-size: 24px; }
+  .boards.dense .club strong { font-size: 13px; }
+  .boards.dense .club span { display: none; }
+  .club span { color: var(--muted); font-size: 11px; letter-spacing: .04em; }
+  .digits { text-align: center; min-width: 92px; }
+  .digits b {
+    display: block; font-family: "Barlow Condensed", sans-serif;
+    font-size: 58px; line-height: .85; letter-spacing: .04em; font-weight: 700;
+  }
+  .boards.multi .digits b { font-size: 58px; }
+  .boards.dense .digits b { font-size: 28px; }
+  .digits em { display: block; margin-top: 8px; font-style: normal; color: var(--gold); font-size: 12px; letter-spacing: .04em; }
+  .boards.dense .digits em { margin-top: 4px; font-size: 10px; }
+  .effect { margin-top: 12px; color: var(--muted); font-size: 12px; letter-spacing: .02em; }
+  .boards.dense .effect { margin-top: 8px; font-size: 11px; text-align: center; }
+  .effect b { color: var(--green); font-weight: 680; }
+  .timeline { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 8px; }
+  .tl-row {
+    display: grid; grid-template-columns: 1fr 54px 1fr; gap: 8px; align-items: center;
+    min-height: 28px; padding: 3px 0; font-size: 13px;
+  }
+  .tl-row.break { grid-template-columns: 1fr; text-align: center; }
+  .tl-break {
+    margin: 4px 0; padding: 5px 8px; border-radius: 8px;
+    background: rgba(255,255,255,.05); color: var(--muted);
+    font-size: 11px; letter-spacing: .04em; font-weight: 680;
+  }
+  .tl-home, .tl-away { display: flex; align-items: center; gap: 6px; min-width: 0; }
+  .tl-away { justify-content: flex-end; text-align: right; }
+  .tl-home b, .tl-away b { font-weight: 560; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tl-row { border-top: 0; }
+  .tl-min {
+    text-align: center; color: var(--faint);
+    font-variant-numeric: tabular-nums; font-size: 12px;
+  }
+  .card-y, .card-r { width: 9px; height: 13px; border-radius: 2px; flex: none; }
+  .card-y { background: #f5c451; }
+  .card-r { background: #e10600; }
+  .ball { font-size: 12px; }
+  .assist { color: var(--faint); font-weight: 460; }
+  .empty-board { padding: 28px 8px 10px; color: var(--muted); }
+
+  .statgrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; align-items: stretch; }
+  .statcard {
+    background: rgba(16,20,27,.9); border: 1px solid var(--line); border-radius: 18px; overflow: hidden;
+    min-width: 0;
+  }
+  .statcard h3 {
+    margin: 0; padding: 12px 14px 8px; font-size: 13px; letter-spacing: .01em; color: #ff3b4e;
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .statcard h3 span { color: var(--faint); letter-spacing: 0; text-transform: none; font-size: 11px; }
+  .leader {
+    display: grid; grid-template-columns: 18px 22px minmax(0, 1fr) 42px; gap: 8px; align-items: center;
+    height: 46px; padding: 0 12px; border-top: 1px solid var(--line);
+  }
+  .leader .who { flex: 1; min-width: 0; }
+  .leader b { display: block; font-weight: 560; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .leader small { display: block; color: var(--faint); font-size: 11px; line-height: 1.2; }
+  .leader .val { font-family: "Barlow Condensed", sans-serif; font-size: 20px; color: var(--gold); font-weight: 700; text-align: right; }
+  .leader img { width: 22px; height: 22px; object-fit: contain; flex: none; background: transparent; }
+  .leader .rk { width: 16px; color: var(--faint); font-size: 12px; text-align: center; flex: none; }
+
+  .desk { display: grid; grid-template-columns: 460px minmax(0, 1fr); gap: 16px; align-items: start; }
+  .panel {
+    background: rgba(16,20,27,.86);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    overflow: hidden;
+    backdrop-filter: blur(8px);
+  }
+  .panel-h {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 16px 18px 12px; border-bottom: 1px solid var(--line);
+  }
+  .panel-h h2 {
+    margin: 0; font-size: 15px; font-weight: 680; letter-spacing: -.01em;
+  }
+  .panel-h span { color: var(--faint); font-size: 12px; }
+
+  .day {
+    padding: 9px 18px; font-size: 12px; letter-spacing: .02em;
+    color: var(--gold); background: rgba(240,193,75,.05); border-bottom: 1px solid var(--line);
+  }
+  .fixture {
+    display: grid; grid-template-columns: 1fr 86px 1fr; gap: 8px; align-items: center;
+    padding: 12px 16px; border-bottom: 1px solid var(--line);
+  }
+  .fixture:last-child { border-bottom: 0; }
+  .fixture.playing { background: linear-gradient(90deg, rgba(255,51,85,.12), transparent 75%); }
+  .side { display: flex; align-items: center; gap: 8px; min-width: 150px; }
+  .side.away { flex-direction: row-reverse; text-align: right; }
+  .side img { width: 24px; height: 24px; object-fit: contain; }
+  .side b { font-weight: 560; font-size: 14px; white-space: nowrap; }
+  .mid { text-align: center; }
+  .mid .sc {
+    font-family: "Barlow Condensed", sans-serif; font-size: 24px; letter-spacing: .04em; font-weight: 700;
+  }
+  .mid .st { margin-top: 1px; font-size: 11px; letter-spacing: .02em; color: var(--faint); font-weight: 680; }
+  .mid .st.in { color: var(--live); }
+  .mid .st.post { color: var(--green); }
+
+  .table-wrap { overflow: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 640px; table-layout: fixed; }
+  th {
+    position: sticky; top: 0; z-index: 1;
+    text-align: center; padding: 10px 0;
+    font-size: 11px; letter-spacing: .04em; font-weight: 560;
+    color: var(--faint); background: #161c27; border-bottom: 1px solid var(--line);
+  }
+  th:nth-child(2) { text-align: left; padding-left: 8px; }
+  td {
+    padding: 0; height: 52px; text-align: center;
+    border-bottom: 1px solid var(--line);
+    font-variant-numeric: tabular-nums; font-size: 14px; color: #d7dde6;
+  }
+  td.stat, th.stat { width: 44px; }
+  td.pts, th.pts { width: 46px; text-align: center; color: var(--gold); font-weight: 680; font-size: 16px; }
+  td.chg, th.chg { width: 52px; text-align: center; padding: 0; }
+  .delta {
+    display: inline-grid; place-items: center; min-width: 30px; height: 18px; padding: 0 6px; border-radius: 999px;
+    font-size: 11px; font-weight: 680; background: rgba(62,207,142,.15); color: var(--green);
+  }
+  tr:hover td { background: rgba(255,255,255,.025); }
+  tr.playing td { background: rgba(255,51,85,.07); }
+  td.rank, th.rank { text-align: center; width: 46px; }
+  .pos {
+    display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 8px;
+    background: #222a38; font-family: "Barlow Condensed", sans-serif; font-size: 16px; font-weight: 700;
+  }
+  tr.zone-cl .pos { background: #16382c; color: var(--green); }
+  tr.zone-el .pos { background: #16283c; color: var(--blue); }
+  tr.zone-conf .pos { background: #2a2340; color: var(--purple); }
+  tr.zone-rel .pos { background: #3a1c24; color: #ff8fa0; }
+  td.team { text-align: left; padding-left: 8px; }
+  .teamline { display: grid; grid-template-columns: 16px 26px minmax(0, 1fr); align-items: center; gap: 10px; font-weight: 560; color: var(--text); }
+  .teamline img.badge { width: 26px; height: 26px; object-fit: contain; }
+  .teamline span { letter-spacing: .01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .move { width: 16px; height: 16px; object-fit: contain; background: transparent; justify-self: center; }
+  .board.toggle { cursor: pointer; }
+  .board.toggle .timeline { display: none; }
+  .board.toggle.open .timeline { display: block; }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 14px;
+    padding: 12px 16px 14px; color: var(--muted); font-size: 12px;
+  }
+  .sw { width: 8px; height: 8px; border-radius: 2px; display: inline-block; margin-right: 6px; }
+  .fine {
+    margin: 0; padding: 0 18px 16px; color: var(--faint); font-size: 12px; line-height: 1.5;
+  }
+  @media (max-width: 980px) {
+    .desk, .statgrid, .boards.multi, .boards.dense { grid-template-columns: 1fr; }
+    .club strong { font-size: 20px; }
+    .club img { width: 44px; height: 44px; }
+    .digits b { font-size: 48px; }
+    .brand h1 { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="nav">
+    <div class="brand">
+      <div>
+        <h1>Trendyol <b>Süper Lig</b></h1>
+        <p>2026/27 · Canlı Skor ve Anlık Puan</p>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="seg">
+        <button id="modeLive" class="on" type="button">Canlı Tablo</button>
+        <button id="modeOfficial" type="button">Resmi Tablo</button>
+      </div>
+      <div class="seg" id="themeSeg">
+        <button id="themeDark" class="on" type="button">Koyu</button>
+        <button id="themeLight" type="button">Açık</button>
+      </div>
+      <span class="pill" id="updated">—</span>
+      <button class="refresh" id="refreshBtn" type="button">Yenile</button>
+    </div>
+  </header>
+
+  <section class="boards" id="featured"></section>
+  <section class="statgrid" id="leaders"></section>
+
+  <main class="desk">
+    <section class="panel">
+      <div class="panel-h"><h2>Haftanın Maçları</h2><span>7. hafta</span></div>
+      <div id="matches"></div>
+    </section>
+    <section class="panel">
+      <div class="panel-h"><h2>Puan Durumu</h2><span id="tableMode">Canlı Projeksiyon</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="rank">#</th><th>Takım</th><th class="stat">O</th><th class="stat">G</th><th class="stat">B</th><th class="stat">M</th><th class="stat">A</th><th class="stat">Y</th><th class="stat">AV</th><th class="pts">P</th><th class="chg">+/-</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <div class="legend">
+        <span><i class="sw" style="background:#3ecf8e"></i>Şampiyonlar Ligi</span>
+        <span><i class="sw" style="background:#6cb6ff"></i>Avrupa Ligi</span>
+        <span><i class="sw" style="background:#c4a6ff"></i>Konferans Ligi</span>
+        <span><i class="sw" style="background:#ff8fa0"></i>Küme düşme</span>
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+const STANDINGS = "https://site.api.espn.com/apis/v2/sports/soccer/tur.1/standings";
+const SCORE = (d) => `https://site.api.espn.com/apis/site/v2/sports/soccer/tur.1/scoreboard?dates=${d}`;
+const STATS = "https://site.api.espn.com/apis/site/v2/sports/soccer/tur.1/statistics";
+const SUMMARY = (id) => `https://site.api.espn.com/apis/site/v2/sports/soccer/tur.1/summary?event=${id}`;
+const TEAM_STATS = (id) => `https://sports.core.api.espn.com/v2/sports/soccer/leagues/tur.1/seasons/2026/types/1/teams/${id}/statistics`;
+
+const NAMES = {
+  "Amed SFK": "Amedspor", "Galatasaray": "Galatasaray", "Besiktas": "Beşiktaş",
+  "Kocaelispor": "Kocaelispor", "Alanyaspor": "Alanyaspor", "Fenerbahce": "Fenerbahçe",
+  "Trabzonspor": "Trabzonspor", "Kasimpasa": "Kasımpaşa", "Caykur Rizespor": "Rizespor",
+  "Gaziantep FK": "Gaziantep FK", "Çorum FK": "Çorum FK", "Corum FK": "Çorum FK",
+  "Istanbul Basaksehir": "Başakşehir", "Genclerbirligi": "Gençlerbirliği",
+  "Erzurum BB": "Erzurumspor", "Konyaspor": "Konyaspor", "Samsunspor": "Samsunspor",
+  "Goztepe": "Göztepe", "Eyupspor": "Eyüpspor"
+};
+
+const state = { mode: "live", official: [], matches: [], timer: null, leaders: null, openBoards: new Set() };
+const SOUNDS = {
+  goal: "sounds/gol.mp3",
+  start: "sounds/basladi.mp3",
+  end: "sounds/bitti.mp3"
+};
+const clips = {};
+let soundReady = false;
+function armSounds() {
+  soundReady = true;
+  for (const [key, src] of Object.entries(SOUNDS)) {
+    if (!clips[key]) {
+      const audio = new Audio(src);
+      audio.preload = "auto";
+      clips[key] = audio;
+    }
+  }
+}
+function playSound(key) {
+  if (!soundReady || !clips[key]) return;
+  const audio = clips[key];
+  audio.currentTime = 0;
+  audio.play().catch(() => {
+    const el = document.getElementById("updated");
+    if (el) el.textContent = "Ses yok";
+  });
+}
+function eventKey(ev) {
+  return [ev.kind, ev.side || "", ev.minute || "", ev.name || "", ev.label || "", ev.score || ""].join("|");
+}
+function cueSounds(prev, next) {
+  if (!prev.length) return;
+  const byId = new Map(prev.map(m => [String(m.id), m]));
+  for (const m of next) {
+    const old = byId.get(String(m.id));
+    if (!old || bigClub(m) < 0) continue;
+    if (old.state === "pre" && m.state === "in") playSound("start");
+    if (old.state !== "post" && m.state === "post") playSound("end");
+    const added = (m.home.score + m.away.score) - (old.home.score + old.away.score);
+    if (added > 0) {
+      for (let i = 0; i < added; i++) playSound("goal");
+      continue;
+    }
+    const seen = new Set((old.events || []).map(eventKey));
+    for (const ev of m.events || []) {
+      if (seen.has(eventKey(ev))) continue;
+      if (ev.kind === "goal") playSound("goal");
+    }
+  }
+}
+
+const LEADERS_FALLBACK = {
+  goals: [
+    ["173896","Mohamed Salah","Trabzonspor",7,"https://a.espncdn.com/i/teamlogos/soccer/500/997.png"],
+    ["356402","Gift Orban","Amedspor",7,"https://a.espncdn.com/i/teamlogos/soccer/500/132335.png"],
+    ["216937","Eldor Shomurodov","Başakşehir",6,"https://a.espncdn.com/i/teamlogos/soccer/500/7914.png"],
+    ["240209","Vedat Muriqi","Fenerbahçe",6,"https://a.espncdn.com/i/teamlogos/soccer/500/436.png"],
+    ["228296","Victor Osimhen","Galatasaray",6,"https://a.espncdn.com/i/teamlogos/soccer/500/432.png"]
+  ],
+  assists: [
+    ["211923","İrfan Can Kahveci","Fenerbahçe",3,"https://a.espncdn.com/i/teamlogos/soccer/500/436.png"],
+    ["306808","Mithat Pala","Rizespor",2,"https://a.espncdn.com/i/teamlogos/soccer/500/7656.png"],
+    ["212334","Florent Hadergjonaj","Alanyaspor",2,"https://a.espncdn.com/i/teamlogos/soccer/500/9078.png"],
+    ["159052","Cláudio Winck","Kasımpaşa",2,"https://a.espncdn.com/i/teamlogos/soccer/500/6870.png"],
+    ["342759","Ermal Krasniqi","Amedspor",2,"https://a.espncdn.com/i/teamlogos/soccer/500/132335.png"]
+  ],
+  xg: [
+    ["Galatasaray",15.1,"https://a.espncdn.com/i/teamlogos/soccer/500/432.png"],
+    ["Fenerbahçe",13.9,"https://a.espncdn.com/i/teamlogos/soccer/500/436.png"],
+    ["Göztepe",12.1,"https://a.espncdn.com/i/teamlogos/soccer/500/789.png"],
+    ["Amedspor",11.7,"https://a.espncdn.com/i/teamlogos/soccer/500/132335.png"],
+    ["Beşiktaş",11.1,"https://a.espncdn.com/i/teamlogos/soccer/500/1895.png"]
+  ],
+  poss: [
+    ["Beşiktaş",62.7,"https://a.espncdn.com/i/teamlogos/soccer/500/1895.png"],
+    ["Galatasaray",59.9,"https://a.espncdn.com/i/teamlogos/soccer/500/432.png"],
+    ["Samsunspor",57.0,"https://a.espncdn.com/i/teamlogos/soccer/500/11429.png"],
+    ["Trabzonspor",56.5,"https://a.espncdn.com/i/teamlogos/soccer/500/997.png"],
+    ["Rizespor",56.0,"https://a.espncdn.com/i/teamlogos/soccer/500/7656.png"]
+  ]
+};
+
+const FALLBACK = {
+  official: [
+    ["132335","Amed SFK",4,1,1,15,7,13,"https://a.espncdn.com/i/teamlogos/soccer/500/132335.png"],
+    ["432","Galatasaray",4,1,1,13,10,13,"https://a.espncdn.com/i/teamlogos/soccer/500/432.png"],
+    ["1895","Besiktas",4,0,2,14,7,12,"https://a.espncdn.com/i/teamlogos/soccer/500/1895.png"],
+    ["995","Kocaelispor",4,0,2,7,4,12,"https://a.espncdn.com/i/teamlogos/soccer/500/995.png"],
+    ["9078","Alanyaspor",3,2,1,8,6,11,"https://a.espncdn.com/i/teamlogos/soccer/500/9078.png"],
+    ["436","Fenerbahce",3,1,2,16,6,10,"https://a.espncdn.com/i/teamlogos/soccer/500/436.png"],
+    ["997","Trabzonspor",3,1,2,13,5,10,"https://a.espncdn.com/i/teamlogos/soccer/500/997.png"],
+    ["6870","Kasimpasa",2,4,0,7,5,10,"https://a.espncdn.com/i/teamlogos/soccer/500/6870.png"],
+    ["7656","Caykur Rizespor",3,1,2,7,6,10,"https://a.espncdn.com/i/teamlogos/soccer/500/7656.png"],
+    ["20070","Gaziantep FK",2,2,2,7,7,8,"https://a.espncdn.com/i/teamlogos/soccer/500/20070.png"],
+    ["132334","Çorum FK",2,1,3,13,12,7,"https://a.espncdn.com/i/teamlogos/soccer/500/132334.png"],
+    ["7914","Istanbul Basaksehir",2,1,3,10,11,7,"https://a.espncdn.com/i/teamlogos/soccer/500/7914.png"],
+    ["996","Genclerbirligi",2,1,3,5,13,7,"https://a.espncdn.com/i/teamlogos/soccer/500/996.png"],
+    ["19267","Erzurum BB",2,1,3,3,11,7,"https://a.espncdn.com/i/teamlogos/soccer/500/19267.png"],
+    ["7648","Konyaspor",1,1,4,4,8,4,"https://a.espncdn.com/i/teamlogos/soccer/500/7648.png"],
+    ["11429","Samsunspor",1,1,4,6,12,4,"https://a.espncdn.com/i/teamlogos/soccer/500/11429.png"],
+    ["789","Goztepe",0,3,3,11,15,3,"https://a.espncdn.com/i/teamlogos/soccer/500/789.png"],
+    ["20729","Eyupspor",1,0,5,2,16,3,"https://a.espncdn.com/i/teamlogos/soccer/500/20729.png"]
+  ],
+  matches: [
+    { id:"fb1", date:"2026-10-09T17:00:00Z", state:"in", detail:"CANLI", name:"STATUS_FIRST_HALF", clock:"", home:{id:"432", name:"Galatasaray", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/432.png", score:0, record:"4-1-1"}, away:{id:"6870", name:"Kasımpaşa", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/6870.png", score:0, record:"2-4-0"} },
+    { id:"fb2", date:"2026-10-10T10:30:00Z", state:"pre", detail:"", name:"", clock:"", home:{id:"996", name:"Gençlerbirliği", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/996.png", score:0, record:""}, away:{id:"132335", name:"Amedspor", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/132335.png", score:0, record:""} },
+    { id:"fb3", date:"2026-10-10T13:00:00Z", state:"pre", detail:"", name:"", clock:"", home:{id:"9078", name:"Alanyaspor", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/9078.png", score:0, record:""}, away:{id:"19267", name:"Erzurumspor", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/19267.png", score:0, record:""} },
+    { id:"fb4", date:"2026-10-10T13:00:00Z", state:"pre", detail:"", name:"", clock:"", home:{id:"11429", name:"Samsunspor", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/11429.png", score:0, record:""}, away:{id:"997", name:"Trabzonspor", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/997.png", score:0, record:""} },
+    { id:"fb5", date:"2026-10-10T16:00:00Z", state:"pre", detail:"", name:"", clock:"", home:{id:"7656", name:"Rizespor", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/7656.png", score:0, record:""}, away:{id:"436", name:"Fenerbahçe", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/436.png", score:0, record:""} },
+    { id:"fb6", date:"2026-10-11T10:30:00Z", state:"pre", detail:"", name:"", clock:"", home:{id:"7648", name:"Konyaspor", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/7648.png", score:0, record:""}, away:{id:"7914", name:"Başakşehir", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/7914.png", score:0, record:""} },
+    { id:"fb7", date:"2026-10-11T13:00:00Z", state:"pre", detail:"", name:"", clock:"", home:{id:"20070", name:"Gaziantep FK", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/20070.png", score:0, record:""}, away:{id:"132334", name:"Çorum FK", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/132334.png", score:0, record:""} },
+    { id:"fb8", date:"2026-10-11T16:00:00Z", state:"pre", detail:"", name:"", clock:"", home:{id:"1895", name:"Beşiktaş", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/1895.png", score:0, record:""}, away:{id:"995", name:"Kocaelispor", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/995.png", score:0, record:""} },
+    { id:"fb9", date:"2026-10-12T17:00:00Z", state:"pre", detail:"", name:"", clock:"", home:{id:"20729", name:"Eyüpspor", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/20729.png", score:0, record:""}, away:{id:"789", name:"Göztepe", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/789.png", score:0, record:""} }
+  ]
+};
+
+function seedFallback() {
+  state.official = FALLBACK.official.map((r, i) => ({
+    id: r[0], name: trName(r[1]), logo: r[8],
+    w: r[2], d: r[3], l: r[4], gf: r[5], ga: r[6], gd: r[5] - r[6], pts: r[7],
+    gp: r[2] + r[3] + r[4], officialRank: i + 1
+  }));
+  state.matches = FALLBACK.matches;
+}
+function trName(name) { return NAMES[name] || name; }
+function esc(s) {
+  return String(s).replace(/[&<>"]/g, c => ({
+    "&": "\u0026amp;", "<": "\u0026lt;", ">": "\u0026gt;", '"': "\u0026quot;"
+  }[c]));
+}
+function ymd(date) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul", year: "numeric", month: "2-digit", day: "2-digit" }).format(date).replaceAll("-", "");
+}
+function addDays(date, n) { return new Date(date.getTime() + n * 86400000); }
+function istTime(iso) {
+  return new Intl.DateTimeFormat("tr-TR", { timeZone: "Europe/Istanbul", hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
+}
+function istDay(iso) {
+  const raw = new Intl.DateTimeFormat("tr-TR", { timeZone: "Europe/Istanbul", weekday: "long", day: "numeric", month: "long" }).format(new Date(iso));
+  return raw.replace(/\p{L}+/gu, w => w.charAt(0).toLocaleUpperCase("tr-TR") + w.slice(1));
+}
+function recordGames(summary) {
+  if (!summary) return null;
+  const p = summary.split("-").map(Number);
+  if (p.length < 3 || p.some(Number.isNaN)) return null;
+  return p[0] + p[1] + p[2];
+}
+function parseStandings(data) {
+  const entries = data.children?.[0]?.standings?.entries || [];
+  return entries.map(e => {
+    const stat = {};
+    for (const s of e.stats) stat[s.name] = s;
+    const num = (k) => Number(stat[k]?.value ?? stat[k]?.displayValue ?? 0);
+    return {
+      id: String(e.team.id),
+      name: trName(e.team.displayName || e.team.shortDisplayName),
+      logo: e.team.logos?.[0]?.href || "",
+      gp: num("gamesPlayed"), w: num("wins"), d: num("ties"), l: num("losses"),
+      gf: num("pointsFor"), ga: num("pointsAgainst"), gd: num("pointDifferential"),
+      pts: num("points"), officialRank: num("rank")
+    };
+  });
+}
+function parseEvents(data) {
+  return (data.events || []).map(ev => {
+    const c = ev.competitions[0];
+    const st = c.status?.type || {};
+    const home = c.competitors.find(t => t.homeAway === "home");
+    const away = c.competitors.find(t => t.homeAway === "away");
+    const rec = (t) => (t.records || []).find(r => r.type === "total")?.summary || "";
+    return {
+      id: ev.id, date: ev.date, state: st.state, detail: st.shortDetail || st.detail || "",
+      name: st.name || "", clock: c.status?.displayClock || "",
+      home: { id: String(home.team.id), name: trName(home.team.displayName), logo: home.team.logo || "", score: Number(home.score || 0), record: rec(home) },
+      away: { id: String(away.team.id), name: trName(away.team.displayName), logo: away.team.logo || "", score: Number(away.score || 0), record: rec(away) }
+    };
+  });
+}
+function shouldProject(match, byId) {
+  if (match.state === "pre") return false;
+  if (match.state === "in") return true;
+  const home = byId.get(match.home.id);
+  const away = byId.get(match.away.id);
+  if (!home || !away) return true;
+  const hg = recordGames(match.home.record);
+  const ag = recordGames(match.away.record);
+  if (hg != null && ag != null) return hg <= home.gp && ag <= away.gp;
+  return true;
+}
+function project(official, matches) {
+  const byId = new Map(official.map(t => [String(t.id), { ...t, id: String(t.id), playing: false, delta: 0, projected: false }]));
+  for (const m of matches) {
+    if (!shouldProject(m, byId)) continue;
+    const h = byId.get(m.home.id);
+    const a = byId.get(m.away.id);
+    if (!h || !a) continue;
+    h.gp += 1; a.gp += 1;
+    h.gf += m.home.score; h.ga += m.away.score;
+    a.gf += m.away.score; a.ga += m.home.score;
+    h.gd = h.gf - h.ga; a.gd = a.gf - a.ga;
+    if (m.home.score > m.away.score) { h.w += 1; h.pts += 3; h.delta += 3; a.l += 1; }
+    else if (m.home.score < m.away.score) { a.w += 1; a.pts += 3; a.delta += 3; h.l += 1; }
+    else { h.d += 1; a.d += 1; h.pts += 1; a.pts += 1; h.delta += 1; a.delta += 1; }
+    h.projected = a.projected = true;
+    if (m.state === "in") h.playing = a.playing = true;
+  }
+  const rows = [...byId.values()];
+  rows.sort((x, y) => y.pts - x.pts || y.gd - x.gd || y.gf - x.gf || x.name.localeCompare(y.name, "tr"));
+  rows.forEach((r, i) => { r.rank = i + 1; });
+  return rows;
+}
+function zone(rank) {
+  if (rank === 1) return "zone-cl";
+  if (rank === 2) return "zone-el";
+  if (rank === 3 || rank === 4) return "zone-conf";
+  if (rank >= 16) return "zone-rel";
+  return "";
+}
+function statusLabel(m) {
+  if (m.state === "pre") return istTime(m.date);
+  if (m.state === "post") return "MS";
+  if (m.name === "STATUS_HALFTIME") return "Devre";
+  if (m.clock) return m.clock;
+  return m.detail || "Canlı";
+}
+function scoreText(m) {
+  return m.state === "pre" ? istTime(m.date) : m.home.score + " – " + m.away.score;
+}
+function effectLine(m) {
+  if (m.state === "pre") return "Başlamadı. Tabloya puan yazılmaz.";
+  if (m.home.score > m.away.score) return `<b>${esc(m.home.name)} +3</b> · ${esc(m.away.name)} 0`;
+  if (m.home.score < m.away.score) return `<b>${esc(m.away.name)} +3</b> · ${esc(m.home.name)} 0`;
+  return `<b>${esc(m.home.name)} +1</b> · <b>${esc(m.away.name)} +1</b>`;
+}
+function parseIncidents(data, match) {
+  const rows = [];
+  let hs = 0, as_ = 0, period = 1;
+  for (const ev of data.keyEvents || []) {
+    const p = ev.period?.number || 1;
+    if (p > period) {
+      rows.push({ kind: "break", label: "İY", score: hs + "-" + as_ });
+      period = p;
+    }
+    const kind = ev.type?.type || "";
+    const side = String(ev.team?.id) === String(match.home.id) ? "home" : "away";
+    const people = (ev.participants || []).map(x => x.athlete?.displayName).filter(Boolean);
+    const minute = ev.clock?.displayValue || "";
+    if (kind === "yellow-card") rows.push({ kind: "yellow", side, name: people[0] || "Sarı kart", minute });
+    else if (kind === "red-card" || kind === "yellow-red-card") rows.push({ kind: "red", side, name: people[0] || "Kırmızı kart", minute });
+    else if (kind.includes("goal")) {
+      const own = kind.includes("own");
+      if (own) { if (side === "home") as_++; else hs++; }
+      else if (side === "home") hs++; else as_++;
+      const assist = people[1] || ((ev.text || "").match(/assist(?:ed)? by ([^,]+)/i) || [])[1] || "";
+      rows.push({ kind: "goal", side: own ? (side === "home" ? "away" : "home") : side, name: (people[0] || "Gol") + (own ? " (kk)" : ""), assist, minute, score: hs + "-" + as_ });
+    }
+  }
+  if (match.name === "STATUS_HALFTIME" && !rows.some(r => r.label === "İY")) {
+    rows.push({ kind: "break", label: "İY", score: match.home.score + "-" + match.away.score });
+  }
+  if (match.state === "post") rows.push({ kind: "break", label: "MS", score: match.home.score + "-" + match.away.score });
+  return rows;
+}
+function timelineHtml(m) {
+  if (!m.events || !m.events.length) return "";
+  const line = (r) => {
+    if (r.kind === "break") return `<div class="tl-row break"><div class="tl-break">${esc(r.label)} ${esc(r.score)}</div></div>`;
+    const mark = r.kind === "yellow" ? '<i class="card-y"></i>' : r.kind === "red" ? '<i class="card-r"></i>' : '<span class="ball">⚽</span>';
+    const who = r.kind === "goal"
+      ? `${r.assist ? `<span class="assist">${esc(r.assist)}</span> ` : ""}<b>${esc(r.name)}</b> <span class="assist">(${esc(r.score)})</span>`
+      : `<b>${esc(r.name)}</b>`;
+    const home = r.side === "home" ? who + mark : "";
+    const away = r.side === "away" ? mark + who : "";
+    return `<div class="tl-row"><div class="tl-home">${home}</div><div class="tl-min">${esc(r.minute)}</div><div class="tl-away">${away}</div></div>`;
+  };
+  return `<div class="timeline"><div class="tl-row break"><div class="tl-break">Maç başladı</div></div>${m.events.map(line).join("")}</div>`;
+}
+function boardCard(m) {
+  const live = m.state === "in";
+  const open = live && state.openBoards.has(String(m.id));
+  const tag = live
+    ? '<span class="live-tag"><span class="dot live"></span>CANLI</span>'
+    : `<span>${esc(m.state === "post" ? "Maç sonucu" : "Sıradaki maç")}</span>`;
+  return `<article class="board ${live ? "toggle" : ""} ${open ? "open" : ""}" data-id="${esc(m.id)}"><div class="board-inner">
+    <div class="board-kicker"><span>Trendyol Süper Lig</span>${tag}</div>
+    <div class="scoreline">
+      <div class="club"><img alt="" src="${esc(m.home.logo)}" /><div><span>Ev sahibi</span><strong>${esc(m.home.name)}</strong></div></div>
+      <div class="digits"><b>${esc(scoreText(m))}</b><em>${esc(statusLabel(m))}</em></div>
+      <div class="club away"><img alt="" src="${esc(m.away.logo)}" /><div><span>Deplasman</span><strong>${esc(m.away.name)}</strong></div></div>
+    </div>
+    ${live ? timelineHtml(m) : ""}
+  </div></article>`;
+}
+function bigClub(m) {
+  const names = m.home.name + m.away.name;
+  if (/fener/i.test(names)) return 0;
+  if (/beşiktaş|besiktas/i.test(names)) return 1;
+  if (/galatasaray/i.test(names)) return 2;
+  return -1;
+}
+function renderFeatured(matches) {
+  const root = document.getElementById("featured");
+  const picks = [];
+  for (const rank of [0, 1, 2]) {
+    const list = matches.filter(m => bigClub(m) === rank);
+    const live = list.filter(m => m.state === "in");
+    const next = list.filter(m => m.state !== "post");
+    const pick = live[0] || next[0] || list[list.length - 1];
+    if (pick) picks.push(pick);
+  }
+  if (!picks.length) {
+    root.className = "boards";
+    root.innerHTML = '<article class="board"><div class="board-inner"><div class="empty-board">Bu aralıkta Fenerbahçe, Beşiktaş veya Galatasaray maçı yok.</div></div></article>';
+    return;
+  }
+  root.className = "boards" + (picks.length === 3 ? " triple" : picks.length === 2 ? " multi" : "");
+  root.innerHTML = picks.map(boardCard).join("");
+}
+function renderLeaders() {
+  const L = state.leaders || packFallback();
+  const card = (title, hint, rows, unit) => `<article class="statcard"><h3>${title}<span>${hint}</span></h3>${rows.map((r, i) => `
+    <div class="leader"><span class="rk">${i + 1}</span><img alt="" src="${esc(r.badge || r.logo)}" /><div class="who"><b>${esc(r.name)}</b><small>${esc(r.team || "")}</small></div><span class="val">${r.value}${unit}</span></div>`).join("")}</article>`;
+  document.getElementById("leaders").innerHTML = [
+    card("Gol Kralı", "sezon", L.goals, ""),
+    card("Asist Kralı", "sezon", L.assists, ""),
+    card("Gol Beklentisi", "takım xG", L.xg, ""),
+    card("Topla Oynama", "takım %", L.poss, "%")
+  ].join("");
+}
+function packFallback() {
+  const person = (rows) => rows.map(r => ({ name: r[1], team: r[2], value: r[3], logo: r[4], badge: r[4] }));
+  const team = (rows) => rows.map(r => ({ name: r[0], team: "", value: r[1], logo: r[2], badge: r[2] }));
+  return { goals: person(LEADERS_FALLBACK.goals), assists: person(LEADERS_FALLBACK.assists), xg: team(LEADERS_FALLBACK.xg), poss: team(LEADERS_FALLBACK.poss) };
+}
+function parsePlayerLeaders(data, key) {
+  const cat = (data.stats || []).find(c => c.name === key);
+  return (cat?.leaders || []).slice(0, 5).map(L => ({
+    name: L.athlete.displayName,
+    team: trName(L.athlete.team?.displayName || ""),
+    value: Number(L.value),
+    logo: L.athlete.team?.logos?.[0]?.href || "",
+    badge: L.athlete.team?.logos?.[0]?.href || ""
+  }));
+}
+function possessionOf(data) {
+  for (const c of data?.splits?.categories || []) {
+    const hit = (c.stats || []).find(s => s.name === "possessionPct");
+    if (hit) return Number(hit.value ?? hit.displayValue);
+  }
+  return null;
+}
+function renderKpis(rows) {
+  renderLeaders();
+}
+function renderMatches(matches) {
+  const root = document.getElementById("matches");
+  if (!matches.length) { root.innerHTML = '<div class="fine">Maç yok.</div>'; return; }
+  const groups = new Map();
+  for (const m of matches) {
+    const key = istDay(m.date);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(m);
+  }
+  let html = "";
+  for (const [day, list] of groups) {
+    html += `<div class="day">${esc(day)}</div>`;
+    for (const m of list) {
+      html += `<div class="fixture ${m.state === "in" ? "playing" : ""}">
+        <div class="side"><img alt="" src="${esc(m.home.logo)}" /><b>${esc(m.home.name)}</b></div>
+        <div class="mid"><div class="sc">${m.state === "pre" ? "vs" : esc(m.home.score + "–" + m.away.score)}</div><div class="st ${m.state}">${esc(statusLabel(m))}</div></div>
+        <div class="side away"><b>${esc(m.away.name)}</b><img alt="" src="${esc(m.away.logo)}" /></div>
+      </div>`;
+    }
+  }
+  root.innerHTML = html;
+}
+function renderTable(rows, officialRanks) {
+  document.getElementById("tableBody").innerHTML = rows.map(r => {
+    const off = officialRanks.get(String(r.id));
+    const up = off && r.rank < off;
+    const down = off && r.rank > off;
+    const arrow = up || down
+      ? `<img class="move" alt="${up ? "yükseldi" : "alçaldı"}" src="${up ? "arrow-up.png" : "arrow-down.png"}" />`
+      : `<span class="move"></span>`;
+    const delta = state.mode === "live" && r.projected && r.delta > 0
+      ? `<span class="delta">+${r.delta}</span>` : "";
+    return `<tr class="${zone(r.rank)} ${r.playing ? "playing" : ""}">
+      <td class="rank"><span class="pos">${r.rank}</span></td>
+      <td class="team"><div class="teamline">${arrow}<img class="badge" alt="" src="${esc(r.logo)}" /><span>${esc(r.name)}</span></div></td>
+      <td class="stat">${r.gp}</td><td class="stat">${r.w}</td><td class="stat">${r.d}</td><td class="stat">${r.l}</td>
+      <td class="stat">${r.gf}</td><td class="stat">${r.ga}</td><td class="stat">${r.gd > 0 ? "+" + r.gd : r.gd}</td>
+      <td class="pts">${r.pts}</td>
+      <td class="chg">${delta}</td>
+    </tr>`;
+  }).join("");
+}
+async function load() {
+  const btn = document.getElementById("refreshBtn");
+  btn.disabled = true;
+  try {
+    const now = new Date();
+    const dates = [];
+    for (let i = -1; i <= 3; i++) dates.push(ymd(addDays(now, i)));
+    const [stRes, statRes, ...scoreRes] = await Promise.all([
+      fetch(STANDINGS, { cache: "no-store" }),
+      fetch(STATS, { cache: "no-store" }),
+      ...dates.map(d => fetch(SCORE(d), { cache: "no-store" }))
+    ]);
+    if (!stRes.ok) throw new Error("Puan durumu alınamadı");
+    const standings = parseStandings(await stRes.json());
+    const matches = [];
+    for (const res of scoreRes) {
+      if (!res.ok) continue;
+      matches.push(...parseEvents(await res.json()));
+    }
+    matches.sort((a, b) => new Date(a.date) - new Date(b.date));
+    await Promise.all(matches.filter(m => m.state !== "pre").map(async m => {
+      try {
+        const res = await fetch(SUMMARY(m.id), { cache: "no-store" });
+        if (!res.ok) return;
+        m.events = parseIncidents(await res.json(), m);
+      } catch (_) {}
+    }));
+    cueSounds(state.matches, matches);
+    state.official = standings;
+    state.matches = matches;
+    const packed = packFallback();
+    if (statRes.ok) {
+      const stats = await statRes.json();
+      const goals = parsePlayerLeaders(stats, "goalsLeaders");
+      const assists = parsePlayerLeaders(stats, "assistsLeaders");
+      if (goals.length) packed.goals = goals;
+      if (assists.length) packed.assists = assists;
+    }
+    const possRows = (await Promise.all(standings.map(async t => {
+      try {
+        const res = await fetch(TEAM_STATS(t.id), { cache: "no-store" });
+        if (!res.ok) return null;
+        const pct = possessionOf(await res.json());
+        return pct == null ? null : { name: t.name, team: "", value: Math.round(pct * 10) / 10, logo: t.logo, badge: t.logo };
+      } catch { return null; }
+    }))).filter(Boolean).sort((a, b) => b.value - a.value).slice(0, 5);
+    if (possRows.length) packed.poss = possRows;
+    state.leaders = packed;
+    paint();
+    const live = matches.some(m => m.state === "in");
+    document.getElementById("updated").textContent = new Intl.DateTimeFormat("tr-TR", {
+      timeZone: "Europe/Istanbul", hour: "2-digit", minute: "2-digit", second: "2-digit"
+    }).format(new Date());
+    clearTimeout(state.timer);
+    state.timer = setTimeout(load, live ? 20000 : 60000);
+  } catch (err) {
+    if (!state.official.length) seedFallback();
+    paint();
+    document.getElementById("updated").textContent = "Kaynak yok";
+    state.timer = setTimeout(load, 30000);
+  } finally {
+    btn.disabled = false;
+  }
+}
+function paint() {
+  const officialRanks = new Map(state.official.map(t => [String(t.id), t.officialRank]));
+  const rows = state.mode === "live"
+    ? project(state.official, state.matches)
+    : state.official.map(t => ({ ...t, rank: t.officialRank, delta: 0, projected: false, playing: false })).sort((a, b) => a.rank - b.rank);
+  if (state.mode === "official") {
+    const playing = new Set();
+    for (const m of state.matches) if (m.state === "in") { playing.add(m.home.id); playing.add(m.away.id); }
+    rows.forEach(r => { r.playing = playing.has(String(r.id)); });
+  }
+  renderFeatured(state.matches);
+  renderKpis(rows);
+  renderMatches(state.matches);
+  renderTable(rows, officialRanks);
+  document.getElementById("tableMode").textContent = state.mode === "live" ? "Canlı Projeksiyon" : "Resmi Sıra";
+  document.getElementById("modeLive").classList.toggle("on", state.mode === "live");
+  document.getElementById("modeOfficial").classList.toggle("on", state.mode === "official");
+}
+document.getElementById("modeLive").onclick = () => { state.mode = "live"; paint(); };
+document.getElementById("modeOfficial").onclick = () => { state.mode = "official"; paint(); };
+document.getElementById("featured").addEventListener("click", (e) => {
+  const card = e.target.closest(".board.toggle");
+  if (!card) return;
+  const id = card.dataset.id;
+  if (state.openBoards.has(id)) state.openBoards.delete(id);
+  else state.openBoards.add(id);
+  paint();
+});
+document.getElementById("refreshBtn").onclick = () => { armSounds(); load(); };
+document.addEventListener("pointerdown", armSounds, { once: true });
+function applyTheme(theme) {
+  document.body.classList.toggle("light", theme === "light");
+  document.getElementById("themeDark").classList.toggle("on", theme !== "light");
+  document.getElementById("themeLight").classList.toggle("on", theme === "light");
+  localStorage.setItem("sl-theme", theme);
+}
+document.getElementById("themeDark").onclick = () => applyTheme("dark");
+document.getElementById("themeLight").onclick = () => applyTheme("light");
+applyTheme(localStorage.getItem("sl-theme") || "dark");
+seedFallback();
+paint();
+load();
+</script>
+</body>
+</html>

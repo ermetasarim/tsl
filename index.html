@@ -93,8 +93,32 @@
   body.light tr.zone-el .pos { background: #e7f2fc; color: #1d6fbf; }
   body.light tr.zone-conf .pos { background: #f3eefe; color: #6d4db8; }
   body.light tr.zone-rel .pos { background: #fdecef; color: #c4233a; }
-  body.light .leader .val { color: #9a6b08; }
-  body.light .tl-min::before { border-left-color: rgba(20,28,42,.28); }
+  body.light .s-head { background: #f3f5f9; color: #5c6676; }
+  body.light .s-row { color: #243041; }
+  body.light .s-row .pos { background: #e8edf4; color: #243041; }
+  body.light .s-row.zone-cl .pos { background: #e5f6ee; color: #1f8a56; }
+  body.light .s-row.zone-el .pos { background: #e7f2fc; color: #1d6fbf; }
+  body.light .s-row.zone-conf .pos { background: #f3eefe; color: #6d4db8; }
+  body.light .s-row.zone-rel .pos { background: #fdecef; color: #c4233a; }
+  body.light .s-row:hover { background: rgba(20,28,42,.04); }
+  body.light .s-row.playing { background: #fff1f3; }
+  body.light .tabs button, body.light .weeks button {
+    background: #fff; color: #3d4654; border-color: rgba(20,28,42,.14);
+  }
+  body.light .tabs button.on, body.light .weeks button.on {
+    background: #e10600; color: #fff; border-color: #e10600;
+  }
+  body.light .more { background: #e8edf4; color: #243041; }
+  body.light .more i { background: #243041; color: #fff; }
+  body.light .leader .val { background: #e7f0fb; color: #1d4e89; }
+  body.light .leader .face { background: #e8edf4; }
+  body.light .fx-home, body.light .fx-away, body.light .fx-score { color: #151a22; }
+  body.light .fx-score.pre { color: #6b7484; }
+  body.light .panel-h h2 { color: #c4233a; }
+  body.light .brand h1 b { color: #c4233a; }
+  body.light .tl-home, body.light .tl-away, body.light .tl-min { color: #243041; }
+  body.light .tl-break { color: #5c6676; }
+  body.light .fx-c { background: #8aa0b8; }
   .shell { position: relative; max-width: 1180px; margin: 0 auto; padding: 22px 20px 56px; }
 
   .nav {
@@ -240,7 +264,7 @@
   .assist { color: var(--faint); font-weight: 460; }
   .empty-board { padding: 28px 8px 10px; color: var(--muted); }
 
-  .statgrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; align-items: stretch; }
+  .statgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; align-items: stretch; }
   .statcard {
     background: rgba(16,20,27,.9); border: 1px solid var(--line); border-radius: 18px; overflow: hidden;
     min-width: 0;
@@ -250,16 +274,16 @@
     text-align: center; font-weight: 700;
   }
   .leader {
-    display: grid; grid-template-columns: 28px 42px minmax(0, 1fr) 42px; gap: 10px; align-items: center;
-    min-height: 58px; padding: 8px 12px; border-top: 1px solid var(--line);
+    display: grid; grid-template-columns: 32px 42px minmax(0, 1fr) auto; gap: 10px; align-items: center;
+    min-height: 58px; padding: 8px 14px; border-top: 1px solid var(--line);
   }
   .leader .who { min-width: 0; }
-  .leader b { display: block; font-weight: 680; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .leader small { display: flex; align-items: center; gap: 5px; color: var(--muted); font-size: 12px; line-height: 1.3; }
-  .leader small img { width: 14px; height: 14px; object-fit: contain; }
+  .leader b { display: block; font-weight: 680; font-size: 15px; white-space: normal; line-height: 1.2; }
+  .leader small { display: flex; align-items: center; gap: 5px; color: var(--muted); font-size: 12px; line-height: 1.3; min-width: 0; white-space: normal; }
+  .leader small img { width: 14px; height: 14px; object-fit: contain; flex: none; }
   .leader .val {
-    display: grid; place-items: center; min-width: 36px; height: 32px; border-radius: 8px;
-    background: #d7e8fb; color: #1d4e89; font-size: 18px; font-weight: 700;
+    display: grid; place-items: center; min-width: 52px; height: 32px; padding: 0 10px; border-radius: 8px;
+    background: #d7e8fb; color: #1d4e89; font-size: 16px; font-weight: 700; white-space: nowrap;
   }
   .leader .face { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; background: #222a38; }
   .leader .rk { color: var(--faint); font-size: 15px; text-align: right; }
@@ -281,6 +305,51 @@
     overflow: hidden;
     backdrop-filter: blur(8px);
   }
+  .stand { overflow-x: auto; }
+  .stand {
+    --cols: 52px minmax(180px, 1.6fr) repeat(8, minmax(44px, 1fr)) 128px;
+  }
+  .s-head, .s-row {
+    display: grid; grid-template-columns: var(--cols); align-items: center;
+  }
+  .s-head {
+    position: sticky; top: 0; z-index: 1; height: 40px;
+    background: #161c27; color: var(--faint); font-size: 11px; font-weight: 560; letter-spacing: .03em;
+    border-bottom: 1px solid var(--line);
+  }
+  .s-head span, .s-cell { text-align: center; }
+  .s-head .team, .s-row .team { text-align: left; padding-left: 8px; }
+  .s-row {
+    height: 52px; border-bottom: 1px solid var(--line);
+    font-variant-numeric: tabular-nums; font-size: 14px; color: #d7dde6;
+  }
+  .s-row .pts { color: var(--gold); font-weight: 680; font-size: 16px; }
+  .s-row .pos {
+    display: grid; place-items: center; width: 26px; height: 26px; margin: 0 auto; border-radius: 8px;
+    background: #222a38; font-family: "Barlow Condensed", sans-serif; font-size: 16px; font-weight: 700;
+  }
+  .s-row.zone-cl .pos { background: #16382c; color: var(--green); }
+  .s-row.zone-el .pos { background: #16283c; color: var(--blue); }
+  .s-row.zone-conf .pos { background: #2a2340; color: var(--purple); }
+  .s-row.zone-rel .pos { background: #3a1c24; color: #ff8fa0; }
+  .s-row.zone-cl { box-shadow: inset 3px 0 #3ecf8e; }
+  .s-row.zone-el { box-shadow: inset 3px 0 #6cb6ff; }
+  .s-row.zone-conf { box-shadow: inset 3px 0 #c4a6ff; }
+  .s-row.zone-rel { box-shadow: inset 3px 0 #ff8fa0; }
+  .s-row .teamline { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .s-row .teamline img.badge { width: 24px; height: 24px; object-fit: contain; flex: none; }
+  .s-row .teamline .name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 560; color: var(--text); }
+  .s-row .move { width: 14px; height: 14px; object-fit: contain; flex: none; }
+  .form { display: flex; gap: 4px; align-items: center; justify-content: center; }
+  .s-row .form i {
+    width: 16px; height: 16px; border-radius: 50%; flex: none;
+    display: inline-grid; place-items: center; font-style: normal; font-size: 10px; color: #fff; font-weight: 700;
+  }
+  .form i.w { background: #1f9d55; }
+  .form i.d { background: #9aa3af; }
+  .form i.l { background: #e10600; }
+  .s-row:hover { background: rgba(255,255,255,.025); }
+  .s-row.playing { background: rgba(255,51,85,.07); }
   .panel-h {
     display: flex; justify-content: space-between; align-items: baseline;
     padding: 16px 18px 12px; border-bottom: 1px solid var(--line);
@@ -301,9 +370,12 @@
   .tabs button.on { background: #e10600; color: #fff; border-color: #e10600; }
   .view { display: none; }
   .view.on { display: block; }
-  .weeks { display: flex; gap: 6px; overflow: auto; padding: 12px 12px 4px; }
+  .weeks {
+    display: grid; grid-template-columns: repeat(17, minmax(0, 1fr));
+    gap: 6px; padding: 12px;
+  }
   .weeks button {
-    flex: none; width: 36px; height: 32px; border-radius: 8px; border: 1px solid var(--line);
+    width: 100%; height: 32px; border-radius: 8px; border: 1px solid var(--line);
     background: transparent; color: var(--muted); font: inherit; font-weight: 680; cursor: pointer;
   }
   .weeks button.on { background: #e10600; color: #fff; border-color: #e10600; }
@@ -337,31 +409,6 @@
   }
   .fixture.playing .fx-c { background: #e10600; }
 
-  .table-wrap { overflow: auto; }
-  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-  th, td { vertical-align: middle; }
-  th {
-    position: sticky; top: 0; z-index: 1;
-    text-align: center; padding: 10px 0;
-    font-size: 11px; letter-spacing: .04em; font-weight: 560;
-    color: var(--faint); background: #161c27; border-bottom: 1px solid var(--line);
-  }
-  th:nth-child(2) { text-align: left; padding-left: 8px; }
-  td {
-    padding: 0; height: 52px; text-align: center;
-    border-bottom: 1px solid var(--line);
-    font-variant-numeric: tabular-nums; font-size: 14px; color: #d7dde6;
-  }
-  th:nth-child(1), td:nth-child(1) { width: 48px; }
-  th:nth-child(2), td:nth-child(2) { width: auto; }
-  th:nth-child(n+3):nth-child(-n+10), td:nth-child(n+3):nth-child(-n+10) { width: 52px; }
-  th:nth-child(11), td:nth-child(11) { width: 116px; text-align: center; padding: 0; }
-  td.pts, th.pts { color: var(--gold); font-weight: 680; font-size: 16px; }
-  .form { display: flex; gap: 4px; align-items: center; justify-content: center; width: 100%; }
-  .form i {
-    width: 16px; height: 16px; border-radius: 50%; flex: none;
-    display: inline-grid; place-items: center; font-style: normal; font-size: 10px; color: #fff; font-weight: 700; line-height: 1;
-  }
   .form i.w { background: #1f9d55; }
   .form i.d { background: #9aa3af; }
   .form i.l { background: #e10600; }
@@ -371,17 +418,18 @@
   }
   tr:hover td { background: rgba(255,255,255,.025); }
   tr.playing td { background: rgba(255,51,85,.07); }
-  td.rank, th.rank { text-align: center; width: 46px; }
+  td.rank, th.rank { text-align: center; padding: 0; }
   .pos {
     display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 8px;
     background: #222a38; font-family: "Barlow Condensed", sans-serif; font-size: 16px; font-weight: 700;
+    margin: 0 auto;
   }
   tr.zone-cl .pos { background: #16382c; color: var(--green); }
   tr.zone-el .pos { background: #16283c; color: var(--blue); }
   tr.zone-conf .pos { background: #2a2340; color: var(--purple); }
   tr.zone-rel .pos { background: #3a1c24; color: #ff8fa0; }
-  td.team { text-align: left; padding-left: 8px; }
-  .teamline { display: grid; grid-template-columns: 16px 26px auto minmax(0, 1fr); align-items: center; gap: 8px; font-weight: 560; color: var(--text); }
+  td.team { text-align: left; padding-left: 0; }
+  .teamline { display: grid; grid-template-columns: 16px 26px auto minmax(0, 1fr); align-items: center; gap: 8px; font-weight: 560; color: var(--text); margin: 0; }
   .teamline img.badge { width: 26px; height: 26px; object-fit: contain; }
   .teamline span.name { letter-spacing: .01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .live-score {
@@ -408,6 +456,11 @@
   .fine {
     margin: 0; padding: 0 18px 16px; color: var(--faint); font-size: 12px; line-height: 1.5;
   }
+  .about {
+    margin: 0; padding: 14px 16px 16px; max-width: 100%;
+    color: var(--muted); font-size: 9px; line-height: 1.55; letter-spacing: .01em;
+    border-top: 1px solid var(--line); overflow-wrap: anywhere;
+  }
   @media (max-width: 980px) {
     .shell { padding: 14px 12px 40px; }
     .nav { align-items: flex-start; }
@@ -416,9 +469,8 @@
     .statgrid { grid-template-columns: 1fr; gap: 12px; }
     .statcard { overflow: hidden; }
     .statcard h3 { font-size: 20px; padding: 14px 12px 8px; }
-    .leader { grid-template-columns: 24px 40px minmax(0, 1fr) 46px; gap: 8px; padding: 8px 10px; }
-    .leader b, .leader small { overflow: hidden; text-overflow: ellipsis; }
-    .leader .val { font-size: 16px; }
+    .leader { grid-template-columns: 28px 40px minmax(0, 1fr) auto; gap: 8px; padding: 8px 12px; }
+    .leader .val { min-width: 48px; font-size: 15px; padding: 0 8px; }
     .board, .boards.multi .board { min-height: 0; }
     .board-inner { padding: 14px 12px 16px; }
     .scoreline { grid-template-columns: minmax(0, 1fr) 84px minmax(0, 1fr); gap: 6px; }
@@ -429,16 +481,14 @@
     .digits { min-width: 0; }
     .digits b, .boards.multi .digits b { font-size: 34px; }
     .brand h1 { font-size: 28px; }
+    .weeks { grid-template-columns: repeat(17, minmax(0, 1fr)); gap: 4px; padding: 10px; }
+    .weeks button { height: 28px; font-size: 12px; border-radius: 6px; }
     .fixture { grid-template-columns: 46px minmax(0, 1fr) 54px minmax(0, 1fr) 22px; padding: 10px 8px; gap: 6px; }
     .fx-home, .fx-away { font-size: 13px; }
-    table { min-width: 0; }
-    th:nth-child(4), td:nth-child(4),
-    th:nth-child(5), td:nth-child(5),
-    th:nth-child(6), td:nth-child(6),
-    th:nth-child(7), td:nth-child(7),
-    th:nth-child(8), td:nth-child(8),
-    th:nth-child(9), td:nth-child(9),
-    th:nth-child(11), td:nth-child(11) { display: none; }
+    .stand { --cols: 40px minmax(0, 1.4fr) 36px 52px; }
+    .s-head span:nth-child(n+4):nth-child(-n+9),
+    .s-row > span:nth-child(n+4):nth-child(-n+9),
+    .s-head span:nth-child(11), .s-row > span:nth-child(11) { display: none; }
   }
 </style>
 </head>
@@ -469,14 +519,15 @@
 
   <section class="view on" id="view-live">
     <section class="panel">
-      <div class="panel-h"><h2>Canlı Sonuçlar</h2><span id="liveWeek">7. Hafta</span></div>
+      <div class="panel-h"><h2>Canlı Sonuçlar</h2><span id="liveWeek"></span></div>
       <div id="matches"></div>
+      <p class="about">Trendyol Süper Lig Canlı Skor, 2026/27 Adnan Süvari sezonunu tek ekranda izlemek için kuruldu. Canlı Sonuçlar, o haftanın bütün maçlarını saat, skor ve durumla birlikte tutar. Bir maça dokununca goller, penaltı golleri, kendi kalesine atılanlar, asistler, sarı ve kırmızı kartlar, ilk yarı ve maç sonu aynı akışta açılır. Haftanın maçları bitmeden liste değişmez. Hepsi tamamlanınca bir sonraki haftanın fikstürü kendiliğinden gelir. Fikstürde 1’den 34’e her hafta iki satırda durur. Ara tatil ve kış arası boş hafta bırakmaz. Puan Durumu resmi tabloyu ve oynanan maçın anlık etkisini birlikte gösterir. Canlı modda galibiyet 3, beraberlik 1 puan olarak işlenir. Şampiyonlar Ligi, Avrupa Ligi, Konferans Ligi ve küme düşme bölgeleri renkleriyle ayrılır. Son 5 form da aynı satırda okunur. İstatistikler gol, asist, şut, isabetli şut, gol beklentisi ve topla oynama sıralarını oyuncu ve takım için verir. Koyu ve açık tema, İstanbul saati ve sade düzen, sayfayı telefonda ve bilgisayarda okunaklı tutar. Amaç kalabalık reklam değil, maçın kendisidir.</p>
     </section>
   </section>
 
   <section class="view" id="view-fixtures">
     <section class="panel">
-      <div class="panel-h"><h2>Fikstür</h2><span id="fixtureWeek">7. Hafta</span></div>
+      <div class="panel-h"><h2>Fikstür</h2><span id="fixtureWeek"></span></div>
       <div class="weeks" id="weeks"></div>
       <div id="fixtureList"></div>
     </section>
@@ -491,15 +542,12 @@
           <button id="modeOfficial" type="button">Resmi</button>
         </div>
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th class="rank">#</th><th>Takım</th><th class="stat">OM</th><th class="stat">G</th><th class="stat">B</th><th class="stat">M</th><th class="stat">AG</th><th class="stat">YG</th><th class="stat">A</th><th class="pts">P</th><th class="form">Son 5</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody"></tbody>
-        </table>
+      <div class="stand" id="stand">
+        <div class="s-head">
+          <span>#</span><span class="team">Takım</span>
+          <span>OM</span><span>G</span><span>B</span><span>M</span><span>AG</span><span>YG</span><span>A</span><span>P</span><span>Son 5</span>
+        </div>
+        <div id="tableBody"></div>
       </div>
       <div class="legend">
         <span><i class="sw" style="background:#3ecf8e"></i>Şampiyonlar Ligi</span>
@@ -532,14 +580,40 @@ const NAMES = {
   "Goztepe": "Göztepe", "Eyupspor": "Eyüpspor"
 };
 
-const WEEK1 = new Date("2026-08-28T00:00:00+03:00");
+const WEEK1 = new Date("2026-08-14T00:00:00+03:00");
 function weekOf(date) {
   return Math.min(34, Math.max(1, Math.floor((date - WEEK1) / (7 * 86400000)) + 1));
 }
 function weekStart(n) {
   return new Date(WEEK1.getTime() + (n - 1) * 7 * 86400000);
 }
-const state = { mode: "live", tab: "live", week: weekOf(new Date()), official: [], matches: [], fixtures: [], timer: null, leaders: null, openBoards: new Set(), openStats: new Set(), gpSnap: new Map() };
+const WEEK_DATES = [
+  ["2026-08-14","2026-08-15","2026-08-16","2026-08-17"],
+  ["2026-08-21","2026-08-22","2026-08-23","2026-08-24"],
+  ["2026-08-28","2026-08-29","2026-08-30","2026-08-31"],
+  ["2026-09-04","2026-09-05","2026-09-06","2026-09-07"],
+  ["2026-09-11","2026-09-12","2026-09-13","2026-09-14"],
+  ["2026-09-18","2026-09-19","2026-09-20"],
+  ["2026-10-09","2026-10-10","2026-10-11","2026-10-12"],
+  ["2026-10-16","2026-10-17","2026-10-18","2026-10-19"],
+  ["2026-10-23","2026-10-24","2026-10-25","2026-10-26"],
+  ["2026-10-30","2026-10-31","2026-11-01","2026-11-02"],
+  ["2026-11-06","2026-11-07","2026-11-08"],
+  ["2026-11-21","2026-11-22","2026-11-23"],
+  ["2026-11-27","2026-11-28","2026-11-29","2026-11-30"],
+  ["2026-12-04","2026-12-05","2026-12-06","2026-12-07"],
+  ["2026-12-11","2026-12-12","2026-12-13","2026-12-14"],
+  ["2026-12-18","2026-12-19","2026-12-20","2026-12-21"],
+  ["2027-01-17"],["2027-01-24"],["2027-01-31"],["2027-02-07"],["2027-02-14"],["2027-02-21"],["2027-02-28"],
+  ["2027-03-07"],["2027-03-14"],["2027-03-21"],["2027-04-04"],["2027-04-11"],["2027-04-18"],["2027-04-25"],
+  ["2027-05-02"],["2027-05-09"],["2027-05-16"],["2027-05-23"]
+];
+function currentWeek() {
+  const today = ymd(new Date());
+  const i = WEEK_DATES.findIndex(days => days.some(d => d.replaceAll("-", "") >= today));
+  return i < 0 ? 34 : i + 1;
+}
+const state = { mode: "live", tab: "live", week: currentWeek(), liveWeek: currentWeek(), weekDates: WEEK_DATES.map(w => w.slice()), official: [], matches: [], fixtures: [], timer: null, leaders: null, openBoards: new Set(), openStats: new Set(), gpSnap: new Map() };
 const SOUNDS = {
   goal: "sounds/gol.mp3",
   start: "sounds/basladi.mp3",
@@ -618,6 +692,34 @@ const LEADERS_FALLBACK = {
     ["Samsunspor",57.0,"https://a.espncdn.com/i/teamlogos/soccer/500/11429.png"],
     ["Trabzonspor",56.5,"https://a.espncdn.com/i/teamlogos/soccer/500/997.png"],
     ["Rizespor",56.0,"https://a.espncdn.com/i/teamlogos/soccer/500/7656.png"]
+  ],
+  pShots: [
+    ["Mason Greenwood","Fenerbahçe",2.86,"https://a.espncdn.com/i/teamlogos/soccer/500/436.png"],
+    ["Adrian Benedyczak","Kasımpaşa",2.71,"https://a.espncdn.com/i/teamlogos/soccer/500/6870.png"],
+    ["Mohamed Salah","Trabzonspor",2.57,"https://a.espncdn.com/i/teamlogos/soccer/500/997.png"],
+    ["Vedat Muriqi","Fenerbahçe",2.43,"https://a.espncdn.com/i/teamlogos/soccer/500/436.png"],
+    ["Andre Henrique","Göztepe",2.29,"https://a.espncdn.com/i/teamlogos/soccer/500/789.png"]
+  ],
+  pSot: [
+    ["Vedat Muriqi","Fenerbahçe",1.57,"https://a.espncdn.com/i/teamlogos/soccer/500/436.png"],
+    ["Mohamed Salah","Trabzonspor",1.57,"https://a.espncdn.com/i/teamlogos/soccer/500/997.png"],
+    ["Mason Greenwood","Fenerbahçe",1.43,"https://a.espncdn.com/i/teamlogos/soccer/500/436.png"],
+    ["Ernest Muçi","Trabzonspor",1.33,"https://a.espncdn.com/i/teamlogos/soccer/500/997.png"],
+    ["Adrian Benedyczak","Kasımpaşa",1.29,"https://a.espncdn.com/i/teamlogos/soccer/500/6870.png"]
+  ],
+  tShots: [
+    ["Galatasaray",17.86,"https://a.espncdn.com/i/teamlogos/soccer/500/432.png"],
+    ["Fenerbahçe",13.14,"https://a.espncdn.com/i/teamlogos/soccer/500/436.png"],
+    ["Göztepe",13.00,"https://a.espncdn.com/i/teamlogos/soccer/500/789.png"],
+    ["Beşiktaş",12.29,"https://a.espncdn.com/i/teamlogos/soccer/500/1895.png"],
+    ["Amedspor",11.43,"https://a.espncdn.com/i/teamlogos/soccer/500/132335.png"]
+  ],
+  tSot: [
+    ["Galatasaray",8.14,"https://a.espncdn.com/i/teamlogos/soccer/500/432.png"],
+    ["Fenerbahçe",7.29,"https://a.espncdn.com/i/teamlogos/soccer/500/436.png"],
+    ["Trabzonspor",6.71,"https://a.espncdn.com/i/teamlogos/soccer/500/997.png"],
+    ["Beşiktaş",6.29,"https://a.espncdn.com/i/teamlogos/soccer/500/1895.png"],
+    ["Göztepe",6.00,"https://a.espncdn.com/i/teamlogos/soccer/500/789.png"]
   ]
 };
 
@@ -703,18 +805,20 @@ function parseStandings(data) {
   });
 }
 function parseEvents(data) {
-  return (data.events || []).map(ev => {
-    const c = ev.competitions[0];
+  return (data.events || []).flatMap(ev => {
+    const c = ev.competitions?.[0];
+    if (!c) return [];
     const st = c.status?.type || {};
-    const home = c.competitors.find(t => t.homeAway === "home");
-    const away = c.competitors.find(t => t.homeAway === "away");
+    const home = (c.competitors || []).find(t => t.homeAway === "home");
+    const away = (c.competitors || []).find(t => t.homeAway === "away");
+    if (!home || !away) return [];
     const rec = (t) => (t.records || []).find(r => r.type === "total")?.summary || "";
-    return {
+    return [{
       id: ev.id, date: ev.date, state: st.state, detail: st.shortDetail || st.detail || "",
       name: st.name || "", clock: c.status?.displayClock || "",
       home: { id: String(home.team.id), name: trName(home.team.displayName), logo: home.team.logo || "", score: Number(home.score || 0), record: rec(home) },
       away: { id: String(away.team.id), name: trName(away.team.displayName), logo: away.team.logo || "", score: Number(away.score || 0), record: rec(away) }
-    };
+    }];
   });
 }
 function shouldProject(match, byId) {
@@ -794,18 +898,27 @@ function parseIncidents(data, match) {
       rows.push({ kind: "break", label: "İY", score: hs + "-" + as_ });
       period = p;
     }
-    const kind = ev.type?.type || "";
+    const kind = (ev.type?.type || "").toLowerCase();
     const side = String(ev.team?.id) === String(match.home.id) ? "home" : "away";
     const people = (ev.participants || []).map(x => x.athlete?.displayName).filter(Boolean);
     const minute = ev.clock?.displayValue || "";
     if (kind === "yellow-card") rows.push({ kind: "yellow", side, name: people[0] || "Sarı kart", minute });
     else if (kind === "red-card" || kind === "yellow-red-card") rows.push({ kind: "red", side, name: people[0] || "Kırmızı kart", minute });
-    else if (kind.includes("goal")) {
+    else if (kind.includes("goal") || kind === "penalty---scored" || kind.includes("penalty") && kind.includes("scored")) {
       const own = kind.includes("own");
+      const pen = kind.includes("penalty");
       if (own) { if (side === "home") as_++; else hs++; }
       else if (side === "home") hs++; else as_++;
+      const tag = own ? " (kk)" : pen ? " (P)" : "";
       const assist = people[1] || ((ev.text || "").match(/assist(?:ed)? by ([^,]+)/i) || [])[1] || "";
-      rows.push({ kind: "goal", side: own ? (side === "home" ? "away" : "home") : side, name: (people[0] || "Gol") + (own ? " (kk)" : ""), assist, minute, score: hs + "-" + as_ });
+      rows.push({
+        kind: "goal",
+        side: own ? (side === "home" ? "away" : "home") : side,
+        name: (people[0] || "Gol") + tag,
+        assist,
+        minute,
+        score: hs + "-" + as_
+      });
     }
   }
   if (match.name === "STATUS_HALFTIME" && !rows.some(r => r.label === "İY")) {
@@ -890,8 +1003,8 @@ function renderLeaders() {
       <div class="leader">
         <span class="rk">${i + 1}.</span>
         <img class="face" alt="" src="${esc(r.photo || r.badge || r.logo)}" onerror="this.src='${esc(r.badge || r.logo)}'" />
-        <div class="who"><b>${esc(shortName(r.name))}</b><small>${r.team ? `<img alt="" src="${esc(r.badge || r.logo)}" />${esc(r.team)}` : ""}</small></div>
-        <span class="val">${r.value}${unit}</span>
+        <div class="who"><b>${esc(r.name)}</b><small>${r.team ? `<img alt="" src="${esc(r.badge || r.logo)}" />${esc(r.team)}` : ""}</small></div>
+        <span class="val">${String(r.value).replace(".", ",")}${unit}</span>
       </div>`).join("");
     const more = rows.length > 3
       ? `<button class="more" type="button" data-stat="${key}">${open ? "Daha Az" : "Tümünü Göster"} <i>${open ? "–" : "+"}</i></button>`
@@ -901,14 +1014,28 @@ function renderLeaders() {
   document.getElementById("leaders").innerHTML = [
     card("goals", "Gol", L.goals, ""),
     card("assists", "Asist", L.assists, ""),
+    card("pShots", "Şut / Maç", L.pShots, ""),
+    card("pSot", "İsabetli Şut / Maç", L.pSot, ""),
+    card("tShots", "Takım Şut / Maç", L.tShots, ""),
+    card("tSot", "Takım İsabetli Şut", L.tSot, ""),
     card("xg", "Gol Beklentisi", L.xg, ""),
     card("poss", "Topla Oynama", L.poss, "%")
   ].join("");
 }
 function packFallback() {
   const person = (rows) => rows.map(r => ({ name: r[1], team: r[2], value: r[3], logo: r[4], badge: r[4] }));
+  const player = (rows) => rows.map(r => ({ name: r[0], team: r[1], value: r[2], logo: r[3], badge: r[3] }));
   const team = (rows) => rows.map(r => ({ name: r[0], team: "", value: r[1], logo: r[2], badge: r[2] }));
-  return { goals: person(LEADERS_FALLBACK.goals), assists: person(LEADERS_FALLBACK.assists), xg: team(LEADERS_FALLBACK.xg), poss: team(LEADERS_FALLBACK.poss) };
+  return {
+    goals: person(LEADERS_FALLBACK.goals),
+    assists: person(LEADERS_FALLBACK.assists),
+    pShots: player(LEADERS_FALLBACK.pShots),
+    pSot: player(LEADERS_FALLBACK.pSot),
+    tShots: team(LEADERS_FALLBACK.tShots),
+    tSot: team(LEADERS_FALLBACK.tSot),
+    xg: team(LEADERS_FALLBACK.xg),
+    poss: team(LEADERS_FALLBACK.poss)
+  };
 }
 function parsePlayerLeaders(data, key) {
   const cat = (data.stats || []).find(c => c.name === key);
@@ -1000,7 +1127,7 @@ function kickLabel(m) {
 function renderMatches(matches, rootId = "matches") {
   const root = document.getElementById(rootId);
   if (!root) return;
-  if (!matches.length) { root.innerHTML = '<div class="fine">Maç yok.</div>'; return; }
+  if (!matches.length) { root.innerHTML = '<div class="fine">Bu haftanın maçları henüz açıklanmadı.</div>'; return; }
   const groups = new Map();
   for (const m of matches) {
     const key = istDay(m.date);
@@ -1062,43 +1189,113 @@ function renderTable(rows, officialRanks) {
       : `<span class="move"></span>`;
     const delta = state.mode === "live" && r.projected && r.delta > 0
       ? `<span class="delta">+${r.delta}</span>` : "";
-    return `<tr class="${zone(r.rank)} ${r.playing ? "playing" : ""}">
-      <td class="rank"><span class="pos">${r.rank}</span></td>
-      <td class="team"><div class="teamline">${arrow}<img class="badge" alt="" src="${esc(r.logo)}" /><span class="name">${esc(r.name)}</span>${liveBadge(r.id)}</div></td>
-      <td class="stat">${r.gp}</td><td class="stat">${r.w}</td><td class="stat">${r.d}</td><td class="stat">${r.l}</td>
-      <td class="stat">${r.gf}</td><td class="stat">${r.ga}</td><td class="stat">${r.gd > 0 ? "+" + r.gd : r.gd}</td>
-      <td class="pts">${r.pts}</td>
-      <td class="form">${formHtml(r.form)}</td>
-    </tr>`;
+    return `<div class="s-row ${zone(r.rank)} ${r.playing ? "playing" : ""}">
+      <span class="pos">${r.rank}</span>
+      <div class="team"><div class="teamline">${arrow}<img class="badge" alt="" src="${esc(r.logo)}" /><span class="name">${esc(r.name)}</span>${liveBadge(r.id)}</div></div>
+      <span>${r.gp}</span><span>${r.w}</span><span>${r.d}</span><span>${r.l}</span>
+      <span>${r.gf}</span><span>${r.ga}</span><span>${r.gd > 0 ? "+" + r.gd : r.gd}</span>
+      <span class="pts">${r.pts}</span>
+      <span>${formHtml(r.form)}</span>
+    </div>`;
   }).join("");
 }
 async function getJSON(url) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 12000);
-  try {
-    const res = await fetch(url, { cache: "no-store", signal: ctrl.signal });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch {
-    return null;
-  } finally {
-    clearTimeout(timer);
+  const urls = [url, "https://api.allorigins.win/raw?url=" + encodeURIComponent(url)];
+  for (const target of urls) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 12000);
+    try {
+      const res = await fetch(target, { cache: "no-store", signal: ctrl.signal });
+      if (!res.ok) continue;
+      return await res.json();
+    } catch {
+      continue;
+    } finally {
+      clearTimeout(timer);
+    }
   }
+  return null;
+}
+async function ensureCalendar() {
+  if (state.weekDates.length === 34 && state.weekDates[0].length) return;
+  state.weekDates = WEEK_DATES.map(w => w.slice());
+  const data = await getJSON(SCORE(ymd(new Date())));
+  const raw = data?.leagues?.[0]?.calendar || [];
+  if (!raw.length) return;
+  const days = raw.map(x => x.slice(0, 10)).filter(Boolean);
+  const weeks = [];
+  let cur = [];
+  for (const day of days) {
+    if (!cur.length) { cur = [day]; continue; }
+    const prev = new Date(cur[cur.length - 1] + "T00:00:00Z");
+    const next = new Date(day + "T00:00:00Z");
+    if ((next - prev) / 86400000 > 3) { weeks.push(cur); cur = [day]; }
+    else cur.push(day);
+  }
+  if (cur.length) weeks.push(cur);
+  if (weeks.length >= 30) state.weekDates = weeks.slice(0, 34);
+  while (state.weekDates.length < 34) state.weekDates.push([]);
+}
+function weekQueryDates(n) {
+  const days = state.weekDates[n - 1] || [];
+  if (!days.length) {
+    const start = weekStart(n);
+    return Array.from({ length: 7 }, (_, i) => ymd(addDays(start, i)));
+  }
+  if (days.length === 1) {
+    const base = new Date(days[0] + "T12:00:00+03:00");
+    return [-1, 0, 1, 2, 3].map(i => ymd(addDays(base, i)));
+  }
+  return days.map(d => d.replaceAll("-", ""));
+}
+function inWeek(match, n) {
+  const days = state.weekDates[n - 1] || [];
+  if (!days.length) return true;
+  const day = ymd(new Date(match.date));
+  const first = days[0].replaceAll("-", "");
+  const last = days[days.length - 1].replaceAll("-", "");
+  return day >= first && day <= last;
+}
+async function fetchWeekMatches(n) {
+  await ensureCalendar();
+  const dates = weekQueryDates(n);
+  const data = await Promise.all(dates.map(d => getJSON(SCORE(d))));
+  const seen = new Set();
+  const matches = [];
+  for (const item of data) {
+    for (const m of parseEvents(item || {})) {
+      if (seen.has(m.id) || !inWeek(m, n)) continue;
+      seen.add(m.id);
+      matches.push(m);
+    }
+  }
+  matches.sort((a, b) => new Date(a.date) - new Date(b.date));
+  return matches;
+}
+async function liveWeekMatches() {
+  await ensureCalendar();
+  const today = ymd(new Date());
+  let n = state.weekDates.findIndex(days => days.some(d => d.replaceAll("-", "") >= today));
+  if (n < 0) n = state.weekDates.length - 1;
+  n = Math.max(0, n) + 1;
+  const prevDays = state.weekDates[n - 2] || [];
+  const prevLast = prevDays.length ? prevDays[prevDays.length - 1].replaceAll("-", "") : "";
+  if (n > 1 && prevLast && prevLast < today) {
+    const prev = await fetchWeekMatches(n - 1);
+    if (prev.length && prev.some(m => m.state !== "post")) n -= 1;
+  }
+  const matches = await fetchWeekMatches(n);
+  state.liveWeek = n;
+  return matches;
 }
 async function load() {
   try {
-    const now = new Date();
-    const dates = [];
-    for (let i = -1; i <= 3; i++) dates.push(ymd(addDays(now, i)));
-    const [standingsData, ...scoreData] = await Promise.all([
+    const [standingsData, matches] = await Promise.all([
       getJSON(STANDINGS),
-      ...dates.map(d => getJSON(SCORE(d)))
+      liveWeekMatches()
     ]);
     if (!standingsData) throw new Error("Puan durumu alınamadı");
     const standings = parseStandings(standingsData);
-    const matches = [];
-    for (const data of scoreData) if (data) matches.push(...parseEvents(data));
-    matches.sort((a, b) => new Date(a.date) - new Date(b.date));
     cueSounds(state.matches, matches);
     rememberLive(matches, standings);
     state.official = standings;
@@ -1160,7 +1357,7 @@ function paint() {
   renderMatches(state.matches);
   renderMatches(state.fixtures.length ? state.fixtures : state.matches, "fixtureList");
   renderTable(rows, officialRanks);
-  document.getElementById("liveWeek").textContent = weekOf(new Date()) + ". Hafta";
+  document.getElementById("liveWeek").textContent = state.liveWeek + ". Hafta";
   document.getElementById("fixtureWeek").textContent = state.week + ". Hafta";
   document.getElementById("modeLive").classList.toggle("on", state.mode === "live");
   document.getElementById("modeOfficial").classList.toggle("on", state.mode === "official");
@@ -1178,24 +1375,19 @@ tickClock();
 function renderWeeks() {
   const root = document.getElementById("weeks");
   if (!root) return;
-  root.innerHTML = Array.from({ length: 34 }, (_, i) => {
-    const n = i + 1;
-    return `<button type="button" data-week="${n}" class="${n === state.week ? "on" : ""}">${n}</button>`;
-  }).join("");
-  const on = root.querySelector(".on");
-  if (on) on.scrollIntoView({ inline: "center", block: "nearest" });
+  const btn = (n) => `<button type="button" data-week="${n}" class="${n === state.week ? "on" : ""}">${n}</button>`;
+  const row = (from, to) => {
+    let html = "";
+    for (let n = from; n <= to; n++) html += btn(n);
+    return html;
+  };
+  root.innerHTML = row(1, 17) + row(18, 34);
 }
 async function loadWeek(n) {
   state.week = n;
   renderWeeks();
   document.getElementById("fixtureWeek").textContent = n + ". Hafta";
-  const start = weekStart(n);
-  const dates = [];
-  for (let i = 0; i < 4; i++) dates.push(ymd(addDays(start, i)));
-  const data = await Promise.all(dates.map(d => getJSON(SCORE(d))));
-  const matches = [];
-  for (const item of data) if (item) matches.push(...parseEvents(item));
-  matches.sort((a, b) => new Date(a.date) - new Date(b.date));
+  const matches = await fetchWeekMatches(n);
   state.fixtures = matches;
   renderMatches(matches, "fixtureList");
 }
@@ -1213,27 +1405,29 @@ document.getElementById("weeks").addEventListener("click", (e) => {
   const btn = e.target.closest("button");
   if (btn) loadWeek(Number(btn.dataset.week));
 });
-document.getElementById("matches").addEventListener("click", async (e) => {
+document.getElementById("matches").addEventListener("click", (e) => openMatch(e, state.matches, "matches"));
+document.getElementById("fixtureList").addEventListener("click", (e) => openMatch(e, state.fixtures, "fixtureList"));
+async function openMatch(e, list, rootId) {
   const row = e.target.closest(".fixture");
   if (!row) return;
   const id = row.dataset.id;
   if (state.openBoards.has(id)) {
     state.openBoards.delete(id);
-    renderMatches(state.matches);
+    renderMatches(list, rootId);
     return;
   }
   state.openBoards.add(id);
-  const match = state.matches.find(m => String(m.id) === id);
-  renderMatches(state.matches);
+  const match = list.find(m => String(m.id) === id);
+  renderMatches(list, rootId);
   if (match && !match.events) {
     const data = await getJSON(SUMMARY(id));
     if (data) {
       match.events = parseIncidents(data, match);
       match.box = matchBox(data);
     }
-    renderMatches(state.matches);
+    renderMatches(list, rootId);
   }
-});
+}
 document.getElementById("modeLive").onclick = () => { state.mode = "live"; paint(); };
 document.getElementById("modeOfficial").onclick = () => { state.mode = "official"; paint(); };
 document.getElementById("leaders").addEventListener("click", (e) => {
@@ -1254,8 +1448,7 @@ function applyTheme(theme) {
 document.getElementById("themeDark").onclick = () => applyTheme("dark");
 document.getElementById("themeLight").onclick = () => applyTheme("light");
 applyTheme(localStorage.getItem("sl-theme") || "dark");
-seedFallback();
-paint();
+document.getElementById("matches").innerHTML = '<div class="fine">Yükleniyor</div>';
 load();
 </script>
 </body>

@@ -2,7 +2,8 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <title>TSL - Canlı Skor ve Puan Durumu</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23e10600'/%3E%3Ctext x='32' y='42' text-anchor='middle' font-family='Arial,sans-serif' font-size='22' font-weight='700' fill='%23fff'%3ETSL%3C/text%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -476,13 +477,19 @@
     .shell { padding: 12px 10px 36px; }
     .nav { align-items: flex-start; }
     .controls { width: 100%; }
+    .tabs { gap: 6px; }
+    .tabs button { padding: 8px 12px; font-size: 13px; }
     .statgrid { grid-template-columns: 1fr; gap: 12px; }
     .weeks { grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 6px; padding: 10px; }
     .weeks button { height: 36px; font-size: 14px; }
-    .fixture { grid-template-columns: 44px minmax(0, 1fr) 52px minmax(0, 1fr) 22px; padding: 12px 8px; gap: 6px; }
+    .fixture { grid-template-columns: 42px minmax(0, 1fr) 48px minmax(0, 1fr) 20px; padding: 12px 8px; gap: 6px; }
     .fx-home, .fx-away { font-size: 13px; }
-    .stand { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .stand { --cols: 36px minmax(0, 1.5fr) 34px 46px; overflow-x: hidden; }
+    .s-head > *:nth-child(n+4):nth-child(-n+9),
+    .s-row > *:nth-child(n+4):nth-child(-n+9),
+    .s-head > *:nth-child(11), .s-row > *:nth-child(11) { display: none; }
     .panel, .statblock, .statcard { border-radius: 16px; }
+    .panel-h { flex-wrap: wrap; gap: 8px; }
   }
 </style>
 </head>
@@ -719,30 +726,35 @@ const LEADERS_FALLBACK = {
 
 const FALLBACK = {
   official: [
-    ["132335","Amed SFK",4,1,1,15,7,13,"https://a.espncdn.com/i/teamlogos/soccer/500/132335.png"],
-    ["432","Galatasaray",4,1,1,13,10,13,"https://a.espncdn.com/i/teamlogos/soccer/500/432.png"],
-    ["1895","Besiktas",4,0,2,14,7,12,"https://a.espncdn.com/i/teamlogos/soccer/500/1895.png"],
-    ["995","Kocaelispor",4,0,2,7,4,12,"https://a.espncdn.com/i/teamlogos/soccer/500/995.png"],
-    ["9078","Alanyaspor",3,2,1,8,6,11,"https://a.espncdn.com/i/teamlogos/soccer/500/9078.png"],
-    ["436","Fenerbahce",3,1,2,16,6,10,"https://a.espncdn.com/i/teamlogos/soccer/500/436.png"],
-    ["997","Trabzonspor",3,1,2,13,5,10,"https://a.espncdn.com/i/teamlogos/soccer/500/997.png"],
-    ["6870","Kasimpasa",2,4,0,7,5,10,"https://a.espncdn.com/i/teamlogos/soccer/500/6870.png"],
-    ["7656","Caykur Rizespor",3,1,2,7,6,10,"https://a.espncdn.com/i/teamlogos/soccer/500/7656.png"],
-    ["20070","Gaziantep FK",2,2,2,7,7,8,"https://a.espncdn.com/i/teamlogos/soccer/500/20070.png"],
-    ["132334","Çorum FK",2,1,3,13,12,7,"https://a.espncdn.com/i/teamlogos/soccer/500/132334.png"],
-    ["7914","Istanbul Basaksehir",2,1,3,10,11,7,"https://a.espncdn.com/i/teamlogos/soccer/500/7914.png"],
-    ["996","Genclerbirligi",2,1,3,5,13,7,"https://a.espncdn.com/i/teamlogos/soccer/500/996.png"],
-    ["19267","Erzurum BB",2,1,3,3,11,7,"https://a.espncdn.com/i/teamlogos/soccer/500/19267.png"],
-    ["7648","Konyaspor",1,1,4,4,8,4,"https://a.espncdn.com/i/teamlogos/soccer/500/7648.png"],
-    ["11429","Samsunspor",1,1,4,6,12,4,"https://a.espncdn.com/i/teamlogos/soccer/500/11429.png"],
-    ["789","Goztepe",0,3,3,11,15,3,"https://a.espncdn.com/i/teamlogos/soccer/500/789.png"],
-    ["20729","Eyupspor",1,0,5,2,16,3,"https://a.espncdn.com/i/teamlogos/soccer/500/20729.png"]
+    ["432","Galatasaray",5,1,1,16,11,16,"https://a.espncdn.com/i/teamlogos/soccer/500/432.png"],
+    ["1895","Besiktas",5,0,2,16,8,15,"https://a.espncdn.com/i/teamlogos/soccer/500/1895.png"],
+    ["132335","Amed SFK",4,2,1,17,9,14,"https://a.espncdn.com/i/teamlogos/soccer/500/132335.png"],
+    ["436","Fenerbahce",4,1,2,19,6,13,"https://a.espncdn.com/i/teamlogos/soccer/500/436.png"],
+    ["997","Trabzonspor",4,1,2,16,5,13,"https://a.espncdn.com/i/teamlogos/soccer/500/997.png"],
+    ["9078","Alanyaspor",3,3,1,8,6,12,"https://a.espncdn.com/i/teamlogos/soccer/500/9078.png"],
+    ["995","Kocaelispor",4,0,3,8,6,12,"https://a.espncdn.com/i/teamlogos/soccer/500/995.png"],
+    ["132334","Çorum FK",3,1,3,16,12,10,"https://a.espncdn.com/i/teamlogos/soccer/500/132334.png"],
+    ["6870","Kasimpasa",2,4,1,8,8,10,"https://a.espncdn.com/i/teamlogos/soccer/500/6870.png"],
+    ["7656","Caykur Rizespor",3,1,3,7,9,10,"https://a.espncdn.com/i/teamlogos/soccer/500/7656.png"],
+    ["7914","Istanbul Basaksehir",2,2,3,10,11,8,"https://a.espncdn.com/i/teamlogos/soccer/500/7914.png"],
+    ["20070","Gaziantep FK",2,2,3,7,10,8,"https://a.espncdn.com/i/teamlogos/soccer/500/20070.png"],
+    ["996","Genclerbirligi",2,2,3,7,15,8,"https://a.espncdn.com/i/teamlogos/soccer/500/996.png"],
+    ["19267","Erzurum BB",2,2,3,3,11,8,"https://a.espncdn.com/i/teamlogos/soccer/500/19267.png"],
+    ["789","Goztepe",1,3,3,15,15,6,"https://a.espncdn.com/i/teamlogos/soccer/500/789.png"],
+    ["7648","Konyaspor",1,2,4,4,8,5,"https://a.espncdn.com/i/teamlogos/soccer/500/7648.png"],
+    ["11429","Samsunspor",1,1,5,6,15,4,"https://a.espncdn.com/i/teamlogos/soccer/500/11429.png"],
+    ["20729","Eyupspor",1,0,6,2,20,3,"https://a.espncdn.com/i/teamlogos/soccer/500/20729.png"]
   ],
   matches: [
     { id:"fb1", date:"2026-10-16T17:00:00Z", state:"pre", detail:"", name:"", clock:"", home:{id:"132334", name:"Çorum FK", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/132334.png", score:0, record:""}, away:{id:"7656", name:"Rizespor", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/7656.png", score:0, record:""} },
-    { id:"fb2", date:"2026-10-17T14:00:00Z", state:"pre", detail:"", name:"", clock:"", home:{id:"996", name:"Gençlerbirliği", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/996.png", score:0, record:""}, away:{id:"432", name:"Galatasaray", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/432.png", score:0, record:""} },
-    { id:"fb3", date:"2026-10-17T17:00:00Z", state:"pre", detail:"", name:"", clock:"", home:{id:"436", name:"Fenerbahçe", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/436.png", score:0, record:""}, away:{id:"9078", name:"Alanyaspor", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/9078.png", score:0, record:""} },
-    { id:"fb4", date:"2026-10-19T17:00:00Z", state:"pre", detail:"", name:"", clock:"", home:{id:"997", name:"Trabzonspor", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/997.png", score:0, record:""}, away:{id:"1895", name:"Beşiktaş", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/1895.png", score:0, record:""} }
+    { id:"fb2", date:"2026-10-17T11:00:00Z", state:"pre", detail:"", name:"", clock:"", home:{id:"19267", name:"Erzurumspor", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/19267.png", score:0, record:""}, away:{id:"20729", name:"Eyüpspor", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/20729.png", score:0, record:""} },
+    { id:"fb3", date:"2026-10-17T14:00:00Z", state:"pre", detail:"", name:"", clock:"", home:{id:"132335", name:"Amedspor", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/132335.png", score:0, record:""}, away:{id:"7648", name:"Konyaspor", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/7648.png", score:0, record:""} },
+    { id:"fb4", date:"2026-10-17T14:00:00Z", state:"pre", detail:"", name:"", clock:"", home:{id:"996", name:"Gençlerbirliği", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/996.png", score:0, record:""}, away:{id:"432", name:"Galatasaray", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/432.png", score:0, record:""} },
+    { id:"fb5", date:"2026-10-17T17:00:00Z", state:"pre", detail:"", name:"", clock:"", home:{id:"436", name:"Fenerbahçe", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/436.png", score:0, record:""}, away:{id:"9078", name:"Alanyaspor", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/9078.png", score:0, record:""} },
+    { id:"fb6", date:"2026-10-18T11:00:00Z", state:"pre", detail:"", name:"", clock:"", home:{id:"6870", name:"Kasımpaşa", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/6870.png", score:0, record:""}, away:{id:"11429", name:"Samsunspor", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/11429.png", score:0, record:""} },
+    { id:"fb7", date:"2026-10-18T14:00:00Z", state:"pre", detail:"", name:"", clock:"", home:{id:"995", name:"Kocaelispor", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/995.png", score:0, record:""}, away:{id:"789", name:"Göztepe", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/789.png", score:0, record:""} },
+    { id:"fb8", date:"2026-10-18T17:00:00Z", state:"pre", detail:"", name:"", clock:"", home:{id:"7914", name:"Başakşehir", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/7914.png", score:0, record:""}, away:{id:"20070", name:"Gaziantep FK", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/20070.png", score:0, record:""} },
+    { id:"fb9", date:"2026-10-19T17:00:00Z", state:"pre", detail:"", name:"", clock:"", home:{id:"997", name:"Trabzonspor", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/997.png", score:0, record:""}, away:{id:"1895", name:"Beşiktaş", logo:"https://a.espncdn.com/i/teamlogos/soccer/500/1895.png", score:0, record:""} }
   ]
 };
 
@@ -1202,27 +1214,29 @@ async function getJSON(url) {
   const direct = url + (url.includes("?") ? "&" : "?") + stamp;
   const urls = [
     direct,
-    "https://api.allorigins.win/raw?url=" + encodeURIComponent(direct),
-    "https://corsproxy.io/?" + encodeURIComponent(direct)
+    "https://corsproxy.io/?" + encodeURIComponent(direct),
+    "https://api.allorigins.win/raw?url=" + encodeURIComponent(direct)
   ];
-  for (const target of urls) {
+  const one = (target) => new Promise((resolve, reject) => {
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 8000);
-    try {
-      const res = await fetch(target, { cache: "no-store", signal: ctrl.signal });
-      if (!res.ok) continue;
-      const data = await res.json();
-      if (data && typeof data.contents === "string") {
-        try { return JSON.parse(data.contents); } catch { continue; }
-      }
-      return data;
-    } catch {
-      continue;
-    } finally {
-      clearTimeout(timer);
-    }
+    const timer = setTimeout(() => { ctrl.abort(); reject(new Error("timeout")); }, 7000);
+    fetch(target, { cache: "no-store", signal: ctrl.signal })
+      .then(res => res.ok ? res.json() : Promise.reject(new Error("bad")))
+      .then(data => {
+        clearTimeout(timer);
+        if (data && typeof data.contents === "string") {
+          try { resolve(JSON.parse(data.contents)); } catch { reject(new Error("wrap")); }
+          return;
+        }
+        resolve(data);
+      })
+      .catch(err => { clearTimeout(timer); reject(err); });
+  });
+  try {
+    return await Promise.any(urls.map(one));
+  } catch {
+    return null;
   }
-  return null;
 }
 async function ensureCalendar() {
   if (state.weekDates.length === 34 && state.weekDates[0].length) return;
@@ -1267,7 +1281,13 @@ function inWeek(match, n) {
 async function fetchWeekMatches(n) {
   await ensureCalendar();
   const dates = weekQueryDates(n);
-  const data = await Promise.all(dates.map(d => getJSON(SCORE(d))));
+  let data = await Promise.all(dates.map(d => getJSON(SCORE(d))));
+  const missing = dates.filter((_, i) => !data[i]);
+  if (missing.length) {
+    const again = await Promise.all(missing.map(d => getJSON(SCORE(d))));
+    let j = 0;
+    data = data.map(item => item || again[j++]);
+  }
   const seen = new Set();
   const matches = [];
   for (const item of data) {
@@ -1306,7 +1326,7 @@ async function liveWeekMatches() {
 async function load() {
   try {
     const [standingsData, matches] = await Promise.all([
-      getJSON(STANDINGS),
+      getJSON(STANDINGS).then(d => d || getJSON(STANDINGS)),
       liveWeekMatches()
     ]);
     if (!standingsData) throw new Error("Puan durumu alınamadı");
@@ -1466,7 +1486,9 @@ function applyTheme(theme) {
 document.getElementById("themeDark").onclick = () => applyTheme("dark");
 document.getElementById("themeLight").onclick = () => applyTheme("light");
 applyTheme(localStorage.getItem("sl-theme") || "dark");
-document.getElementById("matches").innerHTML = '<div class="fine">Yükleniyor</div>';
+seedFallback();
+state.liveWeek = currentWeek();
+paint();
 load();
 </script>
 </body>

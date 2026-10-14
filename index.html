@@ -73,6 +73,8 @@
     box-shadow: 0 8px 24px rgba(20,28,42,.06);
   }
   body.light .board::after { display: none; }
+  body.light .statblock { background: #fff; border-color: rgba(20,28,42,.1); }
+  body.light .statblock h2 { color: #c4233a; }
   body.light .statcard, body.light .panel {
     background: #fff;
     border-color: rgba(20,28,42,.1);
@@ -93,15 +95,15 @@
   body.light tr.zone-el .pos { background: #e7f2fc; color: #1d6fbf; }
   body.light tr.zone-conf .pos { background: #f3eefe; color: #6d4db8; }
   body.light tr.zone-rel .pos { background: #fdecef; color: #c4233a; }
-  body.light .s-head { background: #f3f5f9; color: #5c6676; }
-  body.light .s-row { color: #243041; }
+  body.light .s-head > * { background: #f3f5f9; color: #5c6676; }
+  body.light .s-row > * { color: #243041; }
   body.light .s-row .pos { background: #e8edf4; color: #243041; }
   body.light .s-row.zone-cl .pos { background: #e5f6ee; color: #1f8a56; }
   body.light .s-row.zone-el .pos { background: #e7f2fc; color: #1d6fbf; }
   body.light .s-row.zone-conf .pos { background: #f3eefe; color: #6d4db8; }
   body.light .s-row.zone-rel .pos { background: #fdecef; color: #c4233a; }
-  body.light .s-row:hover { background: rgba(20,28,42,.04); }
-  body.light .s-row.playing { background: #fff1f3; }
+  body.light .s-row:hover > * { background: rgba(20,28,42,.04); }
+  body.light .s-row.playing > * { background: #fff1f3; }
   body.light .tabs button, body.light .weeks button {
     background: #fff; color: #3d4654; border-color: rgba(20,28,42,.14);
   }
@@ -264,7 +266,16 @@
   .assist { color: var(--faint); font-weight: 460; }
   .empty-board { padding: 28px 8px 10px; color: var(--muted); }
 
-  .statgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; align-items: stretch; }
+  .statpage { display: block; }
+  .statblock {
+    margin-bottom: 18px; background: rgba(16,20,27,.86); border: 1px solid var(--line);
+    border-radius: 20px; overflow: hidden;
+  }
+  .statblock h2 {
+    margin: 0; padding: 16px 18px 12px; font-size: 15px; font-weight: 680; letter-spacing: -.01em;
+    color: #ff3b4e; border-bottom: 1px solid var(--line);
+  }
+  .statgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: stretch; padding: 16px; }
   .statcard {
     background: rgba(16,20,27,.9); border: 1px solid var(--line); border-radius: 18px; overflow: hidden;
     min-width: 0;
@@ -305,37 +316,37 @@
     overflow: hidden;
     backdrop-filter: blur(8px);
   }
-  .stand { overflow-x: auto; }
   .stand {
-    --cols: 52px minmax(180px, 1.6fr) repeat(8, minmax(44px, 1fr)) 128px;
+    --cols: 52px minmax(180px, 1.6fr) repeat(8, minmax(48px, 1fr)) 132px;
+    display: grid; grid-template-columns: var(--cols); align-items: center; overflow-x: auto;
   }
-  .s-head, .s-row {
-    display: grid; grid-template-columns: var(--cols); align-items: center;
-  }
-  .s-head {
-    position: sticky; top: 0; z-index: 1; height: 40px;
+  .s-head, #tableBody, .s-row { display: contents; }
+  .s-head > * {
+    position: sticky; top: 0; z-index: 1; height: 44px;
+    display: flex; align-items: center; justify-content: center;
     background: #161c27; color: var(--faint); font-size: 11px; font-weight: 560; letter-spacing: .03em;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 1px solid var(--line); margin-bottom: 10px;
   }
-  .s-head span, .s-cell { text-align: center; }
-  .s-head .team, .s-row .team { text-align: left; padding-left: 8px; }
-  .s-row {
-    height: 52px; border-bottom: 1px solid var(--line);
+  .s-head .team { justify-content: flex-start; padding-left: 28px; }
+  .s-row > * {
+    height: 52px; display: flex; align-items: center; justify-content: center;
+    border-bottom: 1px solid var(--line);
     font-variant-numeric: tabular-nums; font-size: 14px; color: #d7dde6;
   }
+  .s-row .team { justify-content: flex-start; padding-left: 8px; min-width: 0; }
   .s-row .pts { color: var(--gold); font-weight: 680; font-size: 16px; }
   .s-row .pos {
-    display: grid; place-items: center; width: 26px; height: 26px; margin: 0 auto; border-radius: 8px;
+    width: 26px; height: 26px; margin: 0 auto; border-radius: 8px; align-self: center;
     background: #222a38; font-family: "Barlow Condensed", sans-serif; font-size: 16px; font-weight: 700;
   }
   .s-row.zone-cl .pos { background: #16382c; color: var(--green); }
   .s-row.zone-el .pos { background: #16283c; color: var(--blue); }
   .s-row.zone-conf .pos { background: #2a2340; color: var(--purple); }
   .s-row.zone-rel .pos { background: #3a1c24; color: #ff8fa0; }
-  .s-row.zone-cl { box-shadow: inset 3px 0 #3ecf8e; }
-  .s-row.zone-el { box-shadow: inset 3px 0 #6cb6ff; }
-  .s-row.zone-conf { box-shadow: inset 3px 0 #c4a6ff; }
-  .s-row.zone-rel { box-shadow: inset 3px 0 #ff8fa0; }
+  .s-row.zone-cl > :first-child { box-shadow: inset 3px 0 #3ecf8e; }
+  .s-row.zone-el > :first-child { box-shadow: inset 3px 0 #6cb6ff; }
+  .s-row.zone-conf > :first-child { box-shadow: inset 3px 0 #c4a6ff; }
+  .s-row.zone-rel > :first-child { box-shadow: inset 3px 0 #ff8fa0; }
   .s-row .teamline { display: flex; align-items: center; gap: 8px; min-width: 0; }
   .s-row .teamline img.badge { width: 24px; height: 24px; object-fit: contain; flex: none; }
   .s-row .teamline .name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 560; color: var(--text); }
@@ -348,8 +359,8 @@
   .form i.w { background: #1f9d55; }
   .form i.d { background: #9aa3af; }
   .form i.l { background: #e10600; }
-  .s-row:hover { background: rgba(255,255,255,.025); }
-  .s-row.playing { background: rgba(255,51,85,.07); }
+  .s-row:hover > * { background: rgba(255,255,255,.025); }
+  .s-row.playing > * { background: rgba(255,51,85,.07); }
   .panel-h {
     display: flex; justify-content: space-between; align-items: baseline;
     padding: 16px 18px 12px; border-bottom: 1px solid var(--line);
@@ -559,7 +570,7 @@
   </section>
 
   <section class="view" id="view-stats">
-    <section class="statgrid" id="leaders"></section>
+    <section class="statpage" id="leaders"></section>
   </section>
 </div>
 <script>
@@ -1011,16 +1022,25 @@ function renderLeaders() {
       : "";
     return `<article class="statcard"><h3>${title}</h3>${list}${more}</article>`;
   };
-  document.getElementById("leaders").innerHTML = [
-    card("goals", "Gol", L.goals, ""),
-    card("assists", "Asist", L.assists, ""),
-    card("pShots", "Şut / Maç", L.pShots, ""),
-    card("pSot", "İsabetli Şut / Maç", L.pSot, ""),
-    card("tShots", "Takım Şut / Maç", L.tShots, ""),
-    card("tSot", "Takım İsabetli Şut", L.tSot, ""),
-    card("xg", "Gol Beklentisi", L.xg, ""),
-    card("poss", "Topla Oynama", L.poss, "%")
-  ].join("");
+  document.getElementById("leaders").innerHTML = `
+    <section class="statblock">
+      <h2>Oyuncular</h2>
+      <div class="statgrid">
+        ${card("goals", "Gol", L.goals, "")}
+        ${card("assists", "Asist", L.assists, "")}
+        ${card("pShots", "Şut / Maç", L.pShots, "")}
+        ${card("pSot", "İsabetli Şut / Maç", L.pSot, "")}
+      </div>
+    </section>
+    <section class="statblock">
+      <h2>Takımlar</h2>
+      <div class="statgrid">
+        ${card("tShots", "Şut / Maç", L.tShots, "")}
+        ${card("tSot", "İsabetli Şut / Maç", L.tSot, "")}
+        ${card("xg", "Gol Beklentisi", L.xg, "")}
+        ${card("poss", "Topla Oynama", L.poss, "%")}
+      </div>
+    </section>`;
 }
 function packFallback() {
   const person = (rows) => rows.map(r => ({ name: r[1], team: r[2], value: r[3], logo: r[4], badge: r[4] }));
